@@ -1,17 +1,57 @@
 import streamlit as st
-from pipeline import traiter_user_story
+from pipeline import generer_stories_depuis_besoin, formater_markdown
 
-st.set_page_config(page_title="Pipeline IA Hybride", layout="wide")
+st.set_page_config(page_title="Générateur de User Stories enrichies", layout="wide")
+st.title("🧠 Générateur intelligent de User Stories")
 
-st.title("🧠 Pipeline IA Hybride")
-st.markdown("Entrez une user story pour générer automatiquement les spécifications, tests et validation métier.")
+besoin = st.text_input("Exprimez votre besoin métier")
 
-user_stories = st.text_area("User Stories (une par ligne)", height=250)
+if st.button("Générer"):
+    stories = generer_stories_depuis_besoin(besoin)
 
-if st.button("Lancer le pipeline"):
-    lignes = [l.strip() for l in user_stories.split("\n") if l.strip()]
-    for i, story in enumerate(lignes, start=1):
+    exigences_globales = []
+    for s in stories:
+        exigences_globales.extend(s["exigences"])
+
+    st.markdown("## 📘 Exigences classées par type")
+    types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
+    for t in types:
+        st.markdown(f"### 🟦 {t}")
+        for typ, texte in exigences_globales:
+            if typ == t:
+                st.markdown(f"- {texte}")
+
+    for i, s in enumerate(stories, start=1):
         st.markdown(f"## 🧩 Story {i}")
-        synthese = traiter_user_story(story)
-        st.markdown(synthese)
+        st.markdown(f"**User Story**\n{s['story']}")
+
+        st.markdown("**✅ Critères d’acceptation**")
+        for c in s["critères"]:
+            st.markdown(f"- {c}")
+
+        st.markdown("**🧪 Tests fonctionnels**")
+        for t in s["tests"]:
+            st.markdown(f"- {t}")
+
+        st.markdown(f"**🔒 Validation métier**\n{s['validation']}")
+
+        st.markdown("**💡 Suggestions IA**")
+        for suggestion in s["suggestions"]:
+            if st.button(suggestion, key=f"{i}-{suggestion}"):
+                st.success(f"✅ Suggestion sélectionnée : {suggestion}")
+
+    st.markdown("---")
+    st.markdown("## 📘 Définition des types d’exigences")
+    st.markdown("""
+- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)  
+- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)  
+- **Technique** : Contraintes d’architecture, performance, sécurité, formats  
+- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)  
+- **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)
+    """)
+
+    markdown_result = formater_markdown(stories, exigences_globales)
+    st.download_button("📥 Télécharger le Markdown", markdown_result, file_name="user_stories.md")
+
+
 
