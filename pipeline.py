@@ -1,115 +1,127 @@
-import re
+def typer_exigence(texte):
+    texte = texte.lower()
+    if any(mot in texte for mot in ["valeur", "efficacité", "objectif", "conformité", "rentabilité"]):
+        return "Métier"
+    elif any(mot in texte for mot in ["interface", "action", "fonction", "affichage", "filtrer", "exporter"]):
+        return "Fonctionnelle"
+    elif any(mot in texte for mot in ["temps", "performance", "sécurité", "latence", "format", "pdf"]):
+        return "Technique"
+    elif any(mot in texte for mot in ["client", "gestionnaire", "utilisateur", "comptable", "partenaire"]):
+        return "Partie prenante"
+    elif any(mot in texte for mot in ["accessibilité", "ergonomie", "temps de réponse", "robustesse", "fiabilité"]):
+        return "Non fonctionnelle"
+    else:
+        return "Non classé"
 
-def traiter_user_story(user_story):
-    # Extraction NLP
-    def extraire_elements(user_story):
-        user_story = user_story.lower()
-        acteur = re.findall(r"en tant que (\w+)", user_story)
-        action = re.findall(r"je veux (\w+.*?) (?:afin|pour|dans|depuis|avec|et|\.|$)", user_story)
-        objectif = re.findall(r"(?:afin de|pour) (.+)", user_story)
-        contexte = re.findall(r"(?:depuis|dans|avec) (mon .*?|l’.*?|un .*?)", user_story)
-        return {
-            "acteur": acteur[0] if acteur else "inconnu",
-            "action": action[0] if action else "inconnu",
-            "objectif": objectif[0] if objectif else "non précisé",
-            "contexte": contexte[0] if contexte else "non précisé"
-        }
+def generer_suggestions_ia(template):
+    return [
+        f"Ajouter une règle de gestion liée à « {template['action']} »",
+        f"Définir un indicateur de performance pour « {template['objectif']} »",
+        f"Préciser le rôle « {template['acteur']} » : opérationnel ou stratégique",
+        f"Générer une version alternative pour un autre acteur",
+        f"Exporter ce résultat ou l’ajouter au backlog"
+    ]
 
-    # Spécifications
-    def generer_specifications(elements):
-        user_story = f"En tant que {elements['acteur']}, je veux {elements['action']} afin de {elements['objectif']}."
-        criteres = [
-            f"L’utilisateur peut {elements['action']}",
-            f"Les données sont accessibles depuis {elements.get('contexte', 'l’interface')}",
-            "En cas d’erreur, un message clair est affiché"
-        ]
-        description = f"""
-        Fonctionnalité : {elements['action'].capitalize()}
-        Acteur : {elements['acteur'].capitalize()}
-        Objectif : {elements['objectif']}
-        Contexte : {elements.get('contexte', 'non précisé')}
-        """
-        return {
-            "user_story": user_story,
-            "criteres_acceptation": criteres,
-            "description_fonctionnelle": description.strip()
-        }
+def generer_story_complete(template):
+    story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
 
-    # Tests
-    def generer_tests(specs):
-        criteres = specs.get("criteres_acceptation", [])
-        tests = []
-        for i, critere in enumerate(criteres, start=1):
-            test = {
-                "titre": f"Test {i} : {critere}",
-                "preconditions": "L’utilisateur est connecté à son espace personnel.",
-                "etapes": [
-                    "Accéder à l’espace personnel",
-                    f"Effectuer l’action : {critere}"
-                ],
-                "resultat_attendu": f"{critere} est satisfait sans erreur"
-            }
-            tests.append(test)
-        return tests
+    exigences_brutes = [
+        f"Les factures sont accessibles depuis l’interface de gestion",
+        f"Le tri par date et client permet de {template['objectif']}",
+        f"Les données sont exportables en PDF avec un format standardisé",
+        f"{template['acteur'].capitalize()} peut filtrer par client ou montant",
+        f"Le temps de chargement des factures ne dépasse pas 2 secondes"
+    ]
 
-    # Validation métier
-    def valider_specifications(specs, tests):
-        erreurs = []
-        criteres = specs.get("criteres_acceptation", [])
-        titres_tests = [t["titre"].lower() for t in tests]
+    exigences_typées = [(typer_exigence(e), e) for e in exigences_brutes]
 
-        for critere in criteres:
-            if critere.lower() not in " ".join(titres_tests):
-                erreurs.append(f"Critère non couvert par les tests : {critere}")
+    critères = exigences_brutes[:3]
+    tests = [
+        f"Accéder à l’interface liée à {template['action']}",
+        f"Exécuter l’action : {template['action']}",
+        f"Vérifier le résultat attendu lié à {template['objectif']}"
+    ]
+    validation = f"Le besoin métier « {template['objectif']} » est couvert par la fonctionnalité « {template['action']} »."
+    suggestions = generer_suggestions_ia(template)
 
-        if "description_fonctionnelle" in specs and "user_story" in specs:
-            if specs["description_fonctionnelle"].lower() not in specs["user_story"].lower():
-                erreurs.append("Incohérence entre user story et description fonctionnelle")
-
-        if "facture" in specs.get("user_story", "").lower() and "client" not in specs.get("user_story", "").lower():
-            erreurs.append("Accès aux factures réservé aux clients — rôle incohérent")
-
-        return erreurs if erreurs else ["✅ Spécifications validées"]
-
-    # Synthèse
-    def generer_synthese(specs, tests, validation):
-        synthese = f"# 📄 Synthèse fonctionnelle\n\n"
-        synthese += f"## 🧠 User Story\n{specs.get('user_story', 'Non disponible')}\n\n"
-        synthese += f"## ✅ Critères d’acceptation\n"
-        for c in specs.get("criteres_acceptation", []):
-            synthese += f"- {c}\n"
-        synthese += f"\n## 🔍 Description fonctionnelle\n{specs.get('description_fonctionnelle', 'Non disponible')}\n\n"
-        synthese += f"## 🧪 Tests fonctionnels\n"
-        for t in tests:
-            synthese += f"### {t['titre']}\n"
-            synthese += f"- Préconditions : {t['preconditions']}\n"
-            synthese += f"- Étapes :\n"
-            for e in t['etapes']:
-                synthese += f"  - {e}\n"
-            synthese += f"- Résultat attendu : {t['resultat_attendu']}\n\n"
-        synthese += f"## 🔒 Validation métier\n"
-        for v in validation:
-            synthese += f"- {v}\n"
-        return synthese
-
-    # Pipeline complet
-    elements = extraire_elements(user_story)
-    specs = generer_specifications(elements)
-    tests = generer_tests(specs)
-    validation = valider_specifications(specs, tests)
-    synthese = generer_synthese(specs, tests, validation)
-    return synthese
-
-def extraire_elements(user_story):
-    user_story = user_story.lower()
-    acteur = re.findall(r"en tant que (\w+)", user_story)
-    action = re.findall(r"(?:je veux|je souhaite|je peux|je dois) (.+?) (?:afin|pour|dans|depuis|avec|et|\.|$)", user_story)
-    objectif = re.findall(r"(?:afin de|pour) (.+)", user_story)
-    contexte = re.findall(r"(?:depuis|dans|avec) (mon .*?|l’.*?|un .*?)", user_story)
     return {
-        "acteur": acteur[0] if acteur else "inconnu",
-        "action": action[0] if action else "inconnu",
-        "objectif": objectif[0] if objectif else "non précisé",
-        "contexte": contexte[0] if contexte else "non précisé"
+        "story": story,
+        "exigences": exigences_typées,
+        "critères": critères,
+        "tests": tests,
+        "validation": validation,
+        "suggestions": suggestions
     }
 
+def generer_stories_depuis_besoin(besoin):
+    besoin = besoin.lower()
+    stories = []
+
+    if "facture" in besoin:
+        stories.append({
+            "acteur": "gestionnaire",
+            "action": "consulter les factures en temps réel",
+            "objectif": "suivre les paiements efficacement"
+        })
+        stories.append({
+            "acteur": "comptable",
+            "action": "exporter les factures au format PDF",
+            "objectif": "préparer les audits financiers"
+        })
+        stories.append({
+            "acteur": "client",
+            "action": "accéder à mes factures depuis mon espace personnel",
+            "objectif": "vérifier mes dépenses"
+        })
+    else:
+        stories.append({
+            "acteur": "utilisateur",
+            "action": f"réaliser l’action liée à « {besoin} »",
+            "objectif": f"atteindre l’objectif « {besoin} »"
+        })
+        stories.append({
+            "acteur": "gestionnaire",
+            "action": f"faciliter la tâche « {besoin} »",
+            "objectif": f"améliorer la productivité"
+        })
+        stories.append({
+            "acteur": "analyste",
+            "action": f"mesurer l’impact de « {besoin} »",
+            "objectif": f"orienter les décisions"
+        })
+
+    return [generer_story_complete(s) for s in stories]
+
+def formater_markdown(stories, exigences_globales):
+    md = "# 📘 Exigences classées par type\n"
+    types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
+    for t in types:
+        md += f"\n## 🟦 {t}\n"
+        for typ, texte in exigences_globales:
+            if typ == t:
+                md += f"- {texte}\n"
+
+    for i, s in enumerate(stories, start=1):
+        md += f"\n# 🧩 Story {i}\n"
+        md += f"**User Story**\n{s['story']}\n\n"
+        md += "## ✅ Critères d’acceptation\n"
+        for c in s["critères"]:
+            md += f"- {c}\n"
+        md += "\n## 🧪 Tests fonctionnels\n"
+        for t in s["tests"]:
+            md += f"- {t}\n"
+        md += f"\n## 🔒 Validation métier\n{s['validation']}\n"
+        md += "\n## 💡 Suggestions IA\n"
+        for sug in s["suggestions"]:
+            md += f"- {sug}\n"
+
+    md += """
+# 📘 Définition des types d’exigences
+
+- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)  
+- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)  
+- **Technique** : Contraintes d’architecture, performance, sécurité, formats  
+- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)  
+- **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)
+"""
+    return md
