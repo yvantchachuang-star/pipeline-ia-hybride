@@ -1,11 +1,18 @@
+import os
 import streamlit as st
 from pipeline import generer_stories_depuis_besoin, formater_markdown
 
+# 🔧 Corrige les erreurs de Watchdog sur Streamlit Cloud
+os.environ["STREAMLIT_WATCHDOG_MODE"] = "poll"
+
+# 🧠 Configuration de l'app
 st.set_page_config(page_title="Générateur de User Stories enrichies", layout="wide")
 st.title("🧠 Générateur intelligent de User Stories")
 
+# 📝 Entrée utilisateur
 besoin = st.text_input("Exprimez votre besoin métier")
 
+# 🚀 Génération des stories
 if st.button("Générer"):
     stories = generer_stories_depuis_besoin(besoin)
 
@@ -13,6 +20,7 @@ if st.button("Générer"):
     for s in stories:
         exigences_globales.extend(s["exigences"])
 
+    # 📘 Exigences classées
     st.markdown("## 📘 Exigences classées par type")
     types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
     for t in types:
@@ -21,6 +29,7 @@ if st.button("Générer"):
             if typ == t:
                 st.markdown(f"- {texte}")
 
+    # 🧩 Affichage des stories
     for i, s in enumerate(stories, start=1):
         st.markdown(f"## 🧩 Story {i}")
         st.markdown(f"**User Story**\n{s['story']}")
@@ -40,6 +49,7 @@ if st.button("Générer"):
             if st.button(suggestion, key=f"{i}-{suggestion}"):
                 st.success(f"✅ Suggestion sélectionnée : {suggestion}")
 
+    # 📘 Définitions
     st.markdown("---")
     st.markdown("## 📘 Définition des types d’exigences")
     st.markdown("""
@@ -50,8 +60,6 @@ if st.button("Générer"):
 - **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)
     """)
 
+    # 📥 Export Markdown
     markdown_result = formater_markdown(stories, exigences_globales)
     st.download_button("📥 Télécharger le Markdown", markdown_result, file_name="user_stories.md")
-
-
-
