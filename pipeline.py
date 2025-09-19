@@ -1,3 +1,4 @@
+# 📦 Typage des exigences selon leur contenu
 def typer_exigence(texte):
     texte = texte.lower()
     if any(mot in texte for mot in ["valeur", "efficacité", "objectif", "conformité", "rentabilité"]):
@@ -13,6 +14,7 @@ def typer_exigence(texte):
     else:
         return "Non classé"
 
+# 💡 Suggestions IA interactives
 def generer_suggestions_ia(template):
     return [
         f"Ajouter une règle de gestion liée à « {template['action']} »",
@@ -22,6 +24,7 @@ def generer_suggestions_ia(template):
         f"Exporter ce résultat ou l’ajouter au backlog"
     ]
 
+# 🧩 Génération complète d’une user story enrichie
 def generer_story_complete(template):
     story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
 
@@ -53,6 +56,7 @@ def generer_story_complete(template):
         "suggestions": suggestions
     }
 
+# 🧠 Génération de 3 user stories à partir d’un besoin métier
 def generer_stories_depuis_besoin(besoin):
     besoin = besoin.lower()
     stories = []
@@ -92,6 +96,7 @@ def generer_stories_depuis_besoin(besoin):
 
     return [generer_story_complete(s) for s in stories]
 
+# 📥 Format Markdown pour export
 def formater_markdown(stories, exigences_globales):
     md = "# 📘 Exigences classées par type\n"
     types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
@@ -125,3 +130,14 @@ def formater_markdown(stories, exigences_globales):
 - **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)
 """
     return md
+
+# ✅ Vérification locale
+if __name__ == "__main__":
+    besoin_test = "Améliorer la gestion des factures"
+    stories = generer_stories_depuis_besoin(besoin_test)
+    exigences = []
+    for s in stories:
+        exigences.extend(s["exigences"])
+    markdown = formater_markdown(stories, exigences)
+    print("✅ pipeline.py fonctionne correctement")
+    print(markdown[:500])  # aperçu du résultat
