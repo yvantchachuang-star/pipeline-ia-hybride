@@ -99,3 +99,17 @@ def traiter_user_story(user_story):
     validation = valider_specifications(specs, tests)
     synthese = generer_synthese(specs, tests, validation)
     return synthese
+
+def extraire_elements(user_story):
+    user_story = user_story.lower()
+    acteur = re.findall(r"en tant que (\w+)", user_story)
+    action = re.findall(r"(?:je veux|je souhaite|je peux|je dois) (.+?) (?:afin|pour|dans|depuis|avec|et|\.|$)", user_story)
+    objectif = re.findall(r"(?:afin de|pour) (.+)", user_story)
+    contexte = re.findall(r"(?:depuis|dans|avec) (mon .*?|l’.*?|un .*?)", user_story)
+    return {
+        "acteur": acteur[0] if acteur else "inconnu",
+        "action": action[0] if action else "inconnu",
+        "objectif": objectif[0] if objectif else "non précisé",
+        "contexte": contexte[0] if contexte else "non précisé"
+    }
+
