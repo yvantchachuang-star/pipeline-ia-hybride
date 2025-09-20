@@ -23,8 +23,8 @@ if st.button("🚀 Générer livrables"):
     if besoin.strip():
         stories = generer_stories_depuis_besoin(besoin)
         exigences_globales = [ex for s in stories for ex in s["exigences"]]
-        markdown = formater_markdown(stories, exigences_globales)
-        st.session_state.markdown = markdown
+        markdown_text = formater_markdown(stories, exigences_globales)
+        st.session_state.markdown = markdown_text
         st.session_state.stories = stories
         st.success("✅ Livrable généré avec succès.")
     else:
@@ -61,11 +61,12 @@ if st.session_state.stories:
                 for sug in s["suggestions"]:
                     st.markdown(f"- {sug}")
 
-# 📥 Téléchargement Markdown
+# 📦 Export du livrable
 if st.session_state.markdown:
     st.markdown("---")
     st.subheader("📦 Export du livrable")
 
+    # Téléchargement Markdown
     st.download_button(
         label="📥 Télécharger le livrable (.md)",
         data=st.session_state.markdown,
@@ -73,7 +74,7 @@ if st.session_state.markdown:
         mime="text/markdown"
     )
 
-    # 📄 Export PDF
+    # Conversion Markdown → PDF
     def convertir_markdown_en_pdf(markdown_text):
         html = markdown(markdown_text)
         pdf_buffer = BytesIO()
@@ -87,4 +88,3 @@ if st.session_state.markdown:
         file_name="livrable_metier.pdf",
         mime="application/pdf"
     )
-
