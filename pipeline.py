@@ -1,6 +1,5 @@
 import re
 
-# 🔍 Détection automatique du rôle
 def extraire_partie_prenante(texte):
     texte = texte.lower().strip()
     match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)", texte)
@@ -11,7 +10,6 @@ def extraire_partie_prenante(texte):
         return match_implicite.group(2).strip()
     return "utilisateur"
 
-# 🧠 Segmentation multi-acteurs avec syntaxe libre
 def segmenter_requete(requete):
     segments = re.split(r"\s+et\s+|\s*,\s*", requete)
     blocs = []
@@ -30,7 +28,6 @@ def segmenter_requete(requete):
                 blocs.append(f"Le {acteur} veut {besoin}")
     return blocs
 
-# 🔁 Reformulation fluide et non redondante
 def reformuler_besoin(besoin):
     besoin = besoin.strip()
     acteur = extraire_partie_prenante(besoin)
@@ -46,7 +43,6 @@ def reformuler_besoin(besoin):
         {"acteur": acteur, "action": f"ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
     ]
 
-# 📦 Typage adaptatif + BABOK
 def typer_exigence(texte):
     texte = texte.lower().strip()
     if "objectif" in texte or "valeur" in texte or "résultat attendu" in texte:
@@ -61,7 +57,6 @@ def typer_exigence(texte):
         return ("Non fonctionnelle", "Exigence non fonctionnelle")
     return ("Non classé", "Non classé")
 
-# 💡 Suggestions IA alignées BABOK
 def generer_suggestions_ia(template):
     return [
         f"Identifier les règles métier liées à « {template['action']} »",
@@ -70,7 +65,6 @@ def generer_suggestions_ia(template):
         f"Aligner cette exigence avec les objectifs du portefeuille métier"
     ]
 
-# 🧩 Story complète
 def generer_story_complete(template):
     story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
     exigences_brutes = [
@@ -100,7 +94,6 @@ def generer_story_complete(template):
         "suggestions": suggestions
     }
 
-# 🧠 Génération multi-acteurs
 def generer_stories_depuis_besoin(requete):
     blocs = segmenter_requete(requete)
     all_stories = []
@@ -110,7 +103,6 @@ def generer_stories_depuis_besoin(requete):
         all_stories.extend(stories)
     return all_stories
 
-# 📥 Markdown segmenté par acteur et type + BABOK
 def formater_markdown(stories, _):
     md = "# 📘 Livrable segmenté par partie prenante\n"
     acteurs = {}
@@ -147,4 +139,8 @@ def formater_markdown(stories, _):
     md += "\n\n# 📘 Analyse selon le BABOK\n"
     md += "- **Besoin métier** : Problème ou opportunité exprimé par l’organisation\n"
     md += "- **Exigence métier** : Objectif stratégique ou opérationnel\n"
-    md += "- **Exigence des parties prenantes** : Att
+    md += "- **Exigence des parties prenantes** : Attente spécifique d’un acteur ou groupe impacté\n"
+    md += "- **Exigence fonctionnelle** : Comportement attendu du système\n"
+    md += "- **Exigence non fonctionnelle** : Qualité du système (performance, sécurité, ergonomie)\n"
+    md += "- **Règle métier** : Contraintes ou politiques à respecter\n"
+    md += "- **Capacité
