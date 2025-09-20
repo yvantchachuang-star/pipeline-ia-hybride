@@ -186,5 +186,4 @@ def formater_markdown(stories, _):
     md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)\n"
     md += "- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)\n"
     md += "- **Technique** : Contraintes d’architecture, performance, sécurité, formats\n"
-    md += "- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)\n"
-    md += "- **
+    md += "- **Partie prenante** : Besoins spécifiques d’un acteur (client
