@@ -3,24 +3,31 @@ import re
 # 🔍 Détection automatique du rôle
 def extraire_partie_prenante(texte):
     texte = texte.lower().strip()
-    if "en tant que" in texte:
-        match = re.search(r"en tant que\s+([a-zàéèêç\- ]+)", texte)
-        if match:
-            return match.group(1).strip()
-    elif "veut" in texte:
-        return texte.split("veut")[0].replace("le ", "").replace("la ", "").replace("l'", "").strip()
+    match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|demande|attend|a besoin de|recherche)", texte)
+    if match:
+        return match.group(2).strip()
+    match_implicite = re.search(r"pour\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", texte)
+    if match_implicite:
+        return match_implicite.group(2).strip()
     return "utilisateur"
 
-# 🧠 Segmentation multi-acteurs
+# 🧠 Segmentation multi-acteurs avec verbes élargis et syntaxe libre
 def segmenter_requete(requete):
     segments = re.split(r"\s+et\s+|\s*,\s*", requete)
     blocs = []
     for segment in segments:
-        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+veut\s+(.*)", segment.lower())
+        segment = segment.strip().lower()
+        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|demande|attend|a besoin de|recherche)\s+(.*)", segment)
         if match:
             acteur = match.group(2).strip()
-            besoin = match.group(3).strip()
+            besoin = match.group(4).strip()
             blocs.append(f"Le {acteur} veut {besoin}")
+        else:
+            match_implicite = re.search(r"(.*)\s+pour\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", segment)
+            if match_implicite:
+                besoin = match_implicite.group(1).strip()
+                acteur = match_implicite.group(3).strip()
+                blocs.append(f"Le {acteur} veut {besoin}")
     return blocs
 
 # 🔁 Reformulation fluide et grammaticale
@@ -34,42 +41,28 @@ def reformuler_besoin(besoin):
     objectif = "répondre à son besoin métier"
 
     match = re.search(r"veut\s+(.*)", besoin.lower())
-    if match:
-        contenu = match.group(1).strip()
+    contenu = match.group(1).strip() if match else besoin
 
-        nom_match = re.search(r"(un|une)\s+([a-zàéèêç\- ]+)", contenu)
-        if nom_match:
-            article = nom_match.group(1)
-            outil = nom_match.group(2).strip()
-
-            verbe_match = re.search(r"(?:pour|afin de|qui permet de)\s+([a-zàéèêç\- ]+)", contenu)
-            if verbe_match:
-                verbe_phrase = verbe_match.group(1).strip()
-                action = f"{article} {outil} permettant de {verbe_phrase}"
-                objectif = verbe_phrase[0].upper() + verbe_phrase[1:]
-            else:
-                action = f"{article} {outil} pour {contenu}"
-                objectif = contenu[0].upper() + contenu[1:]
+    nom_match = re.search(r"(un|une)\s+([a-zàéèêç\- ]+)", contenu)
+    if nom_match:
+        article = nom_match.group(1)
+        outil = nom_match.group(2).strip()
+        verbe_match = re.search(r"(?:pour|afin de|qui permet de)\s+([a-zàéèêç\- ]+)", contenu)
+        if verbe_match:
+            verbe_phrase = verbe_match.group(1).strip()
+            action = f"{article} {outil} permettant de {verbe_phrase}"
+            objectif = verbe_phrase[0].upper() + verbe_phrase[1:]
         else:
-            action = f"une solution pour {contenu}"
+            action = f"{article} {outil} pour {contenu}"
             objectif = contenu[0].upper() + contenu[1:]
+    else:
+        action = f"une solution pour {contenu}"
+        objectif = contenu[0].upper() + contenu[1:]
 
     return [
-        {
-            "acteur": acteur,
-            "action": f"utiliser {action}",
-            "objectif": objectif
-        },
-        {
-            "acteur": acteur,
-            "action": f"améliorer ses pratiques grâce à {article} {outil} dédiée",
-            "objectif": f"Optimiser ses résultats liés à {objectif.lower()}"
-        },
-        {
-            "acteur": acteur,
-            "action": f"tester et ajuster ses méthodes avec {article} {outil} intelligente",
-            "objectif": f"Obtenir une qualité constante dans {objectif.lower()}"
-        }
+        {"acteur": acteur, "action": f"utiliser {action}", "objectif": objectif},
+        {"acteur": acteur, "action": f"améliorer ses pratiques grâce à {article} {outil} dédiée", "objectif": f"Optimiser ses résultats liés à {objectif.lower()}"},
+        {"acteur": acteur, "action": f"tester et ajuster ses méthodes avec {article} {outil} intelligente", "objectif": f"Obtenir une qualité constante dans {objectif.lower()}"}
     ]
 
 # 📦 Typage adaptatif
@@ -99,7 +92,6 @@ def generer_suggestions_ia(template):
 # 🧩 Story complète
 def generer_story_complete(template):
     story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
-
     exigences_brutes = [
         f"L’interface permet de {template['action']}",
         f"{template['acteur'].capitalize()} peut accéder à la fonctionnalité « {template['action']} »",
@@ -108,9 +100,7 @@ def generer_story_complete(template):
         f"{template['acteur'].capitalize()} peut suivre les opérations en temps réel",
         "Le système garantit un temps de réponse inférieur à 2 secondes"
     ]
-
     exigences_typées = [(typer_exigence(e), e) for e in exigences_brutes]
-
     critères = exigences_brutes[:3]
     tests = [
         f"Se connecter avec un compte {template['acteur']}",
@@ -119,7 +109,6 @@ def generer_story_complete(template):
     ]
     validation = f"Le besoin métier « {template['objectif']} » est couvert par la fonctionnalité « {template['action']} »."
     suggestions = generer_suggestions_ia(template)
-
     return {
         "acteur": template["acteur"],
         "story": story,
@@ -152,21 +141,16 @@ def formater_markdown(stories, _):
 
     for acteur, bloc_stories in acteurs.items():
         md += f"\n# 🧑‍💼 {acteur.capitalize()}\n"
-
         exigences_par_type = {}
         for s in bloc_stories:
             for typ, texte in s["exigences"]:
-                if typ not in exigences_par_type:
-                    exigences_par_type[typ] = []
-                exigences_par_type[typ].append(texte)
-
+                exigences_par_type.setdefault(typ, []).append(texte)
         md += "\n## 🟦 Exigences classées par type\n"
         for typ in ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]:
             if typ in exigences_par_type:
                 md += f"\n### {typ}\n"
                 for texte in exigences_par_type[typ]:
                     md += f"- {texte}\n"
-
         md += f"\n## 📘 User Stories du {acteur}\n"
         for i, s in enumerate(bloc_stories, start=1):
             md += f"\n### 🧩 Story {i}\n"
@@ -174,16 +158,4 @@ def formater_markdown(stories, _):
             md += "**✅ Critères d’acceptation**\n"
             for c in s["critères"]:
                 md += f"- {c}\n"
-            md += "\n**🧪 Tests fonctionnels**\n"
-            for t in s["tests"]:
-                md += f"- {t}\n"
-            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
-            md += "\n**💡 Suggestions IA**\n"
-            for sug in s["suggestions"]:
-                md += f"- {sug}\n"
-
-    md += "\n\n# 📘 Définition des types d’exigences\n"
-    md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)\n"
-    md += "- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)\n"
-    md += "- **Technique** : Contraintes d’architecture, performance, sécurité, formats\n"
-    md += "- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)\n"
+            md += "\n**🧪
