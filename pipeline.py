@@ -146,13 +146,12 @@ def formater_markdown(stories, exigences_globales):
         for sug in s["suggestions"]:
             md += f"- {sug}\n"
 
-    md += """
-# 📘 Définition des types d’exigences
+    # ✅ Définition des types d’exigences activée
+    md += "\n\n# 📘 Définition des types d’exigences\n"
+    md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)\n"
+    md += "- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)\n"
+    md += "- **Technique** : Contraintes d’architecture, performance, sécurité, formats\n"
+    md += "- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)\n"
+    md += "- **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)\n"
 
-- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)  
-- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)  
-- **Technique** : Contraintes d’architecture, performance, sécurité, formats  
-- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)  
-- **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)
-"""
     return md
