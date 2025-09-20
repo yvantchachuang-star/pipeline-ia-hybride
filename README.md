@@ -1,0 +1,1 @@
+🧠 Cette application génère automatiquement des livrables métier complets à partir de requêtes libres, en identifiant les parties prenantes, reformulant les besoins, et structurant les exigences par type et par rôle.
