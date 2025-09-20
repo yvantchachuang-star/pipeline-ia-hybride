@@ -121,6 +121,7 @@ def generer_story_complete(template):
     suggestions = generer_suggestions_ia(template)
 
     return {
+        "acteur": template["acteur"],
         "story": story,
         "exigences": exigences_typées,
         "critères": critères,
@@ -139,35 +140,49 @@ def generer_stories_depuis_besoin(requete):
         all_stories.extend(stories)
     return all_stories
 
-# 📥 Format Markdown pour export
-def formater_markdown(stories, exigences_globales):
-    md = "# 📘 Exigences classées par type\n"
-    types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
-    for t in types:
-        md += f"\n## 🟦 {t}\n"
-        for typ, texte in exigences_globales:
-            if typ == t:
-                md += f"- {texte}\n"
+# 📥 Format Markdown par acteur et type
+def formater_markdown(stories, _):
+    md = "# 📘 Livrable segmenté par partie prenante\n"
+    acteurs = {}
+    for s in stories:
+        acteur = s["acteur"]
+        if acteur not in acteurs:
+            acteurs[acteur] = []
+        acteurs[acteur].append(s)
 
-    for i, s in enumerate(stories, start=1):
-        md += f"\n# 🧩 Story {i}\n"
-        md += f"**User Story**\n{s['story']}\n\n"
-        md += "## ✅ Critères d’acceptation\n"
-        for c in s["critères"]:
-            md += f"- {c}\n"
-        md += "\n## 🧪 Tests fonctionnels\n"
-        for t in s["tests"]:
-            md += f"- {t}\n"
-        md += f"\n## 🔒 Validation métier\n{s['validation']}\n"
-        md += "\n## 💡 Suggestions IA\n"
-        for sug in s["suggestions"]:
-            md += f"- {sug}\n"
+    for acteur, bloc_stories in acteurs.items():
+        md += f"\n# 🧑‍💼 {acteur.capitalize()}\n"
+
+        # Regrouper exigences par type
+        exigences_par_type = {}
+        for s in bloc_stories:
+            for typ, texte in s["exigences"]:
+                if typ not in exigences_par_type:
+                    exigences_par_type[typ] = []
+                exigences_par_type[typ].append(texte)
+
+        md += "\n## 🟦 Exigences classées par type\n"
+        for typ in ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]:
+            if typ in exigences_par_type:
+                md += f"\n### {typ}\n"
+                for texte in exigences_par_type[typ]:
+                    md += f"- {texte}\n"
+
+        md += f"\n## 📘 User Stories du {acteur}\n"
+        for i, s in enumerate(bloc_stories, start=1):
+            md += f"\n### 🧩 Story {i}\n"
+            md += f"**User Story**\n{s['story']}\n\n"
+            md += "**✅ Critères d’acceptation**\n"
+            for c in s["critères"]:
+                md += f"- {c}\n"
+            md += "\n**🧪 Tests fonctionnels**\n"
+            for t in s["tests"]:
+                md += f"- {t}\n"
+            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
+            md += "\n**💡 Suggestions IA**\n"
+            for sug in s["suggestions"]:
+                md += f"- {sug}\n"
 
     md += "\n\n# 📘 Définition des types d’exigences\n"
     md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)\n"
-    md += "- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)\n"
-    md += "- **Technique** : Contraintes d’architecture, performance, sécurité, formats\n"
-    md += "- **Partie prenante** : Besoins spécifiques d’un acteur (client, gestionnaire, partenaire)\n"
-    md += "- **Non fonctionnelle** : Qualités du système (temps de réponse, accessibilité, robustesse, ergonomie)\n"
-
-    return md
+    md += "- **Fonctionnelle** : Comportement attendu du système (actions,
