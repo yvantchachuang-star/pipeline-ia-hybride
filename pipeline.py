@@ -16,6 +16,7 @@ def reformuler_besoin(besoin):
     besoin = besoin.strip()
     acteur = extraire_partie_prenante(besoin)
 
+    outil = "solution"  # ✅ Initialisation par défaut
     match = re.search(r"veut\s+(?:un|une|des)?\s*(\w+)?\s*(.*)", besoin.lower())
     if match:
         outil = match.group(1) or "solution"
@@ -29,10 +30,9 @@ def reformuler_besoin(besoin):
             action = f"utiliser une {outil} adaptée à son besoin"
             objectif = "atteindre son objectif métier"
     else:
-        action = f"utiliser une solution adaptée"
+        action = f"utiliser une {outil} adaptée"
         objectif = "répondre à son besoin métier"
 
-    # Générer 3 variantes de reformulation
     return [
         {
             "acteur": acteur,
