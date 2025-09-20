@@ -1,9 +1,18 @@
 import os
+import shutil
 import streamlit as st
 from pipeline import generer_stories_depuis_besoin, formater_markdown
 
 # 🔧 Corrige les erreurs de Watchdog sur Streamlit Cloud
 os.environ["STREAMLIT_WATCHDOG_MODE"] = "poll"
+
+# 🧹 Nettoyage automatique des fichiers parasites
+if os.path.exists("__pycache__"):
+    shutil.rmtree("__pycache__")
+
+for f in os.listdir():
+    if f.endswith(".pyc"):
+        os.remove(f)
 
 # 🧠 Configuration de l'app
 st.set_page_config(page_title="Générateur de User Stories enrichies", layout="wide")
