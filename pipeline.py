@@ -65,6 +65,19 @@ def generer_suggestions_ia(template):
         f"Aligner cette exigence avec les objectifs du portefeuille métier"
     ]
 
+def generer_analyse_babok(template):
+    return f"""
+### 📘 Analyse selon le BABOK
+
+- **Besoin métier** : {template['acteur'].capitalize()} souhaite {template['action']} pour {template['objectif'].lower()}
+- **Exigence métier** : {template['objectif']}
+- **Exigence des parties prenantes** : Attente spécifique du rôle {template['acteur']}
+- **Exigence fonctionnelle** : Fonctionnalité permettant de {template['action']}
+- **Exigence non fonctionnelle** : Temps de réponse, sécurité, ergonomie liés à {template['action']}
+- **Règle métier** : Définir les conditions d’accès ou de validation pour {template['action']}
+- **Capacité organisationnelle** : Ressources nécessaires pour permettre {template['action']}
+"""
+
 def generer_story_complete(template):
     story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
     exigences_brutes = [
@@ -84,6 +97,7 @@ def generer_story_complete(template):
     ]
     validation = f"Le besoin métier « {template['objectif']} » est couvert par la fonctionnalité « {template['action']} »."
     suggestions = generer_suggestions_ia(template)
+    analyse_babok = generer_analyse_babok(template)
     return {
         "acteur": template["acteur"],
         "story": story,
@@ -91,7 +105,8 @@ def generer_story_complete(template):
         "critères": critères,
         "tests": tests,
         "validation": validation,
-        "suggestions": suggestions
+        "suggestions": suggestions,
+        "babok": analyse_babok
     }
 
 def generer_stories_depuis_besoin(requete):
@@ -135,13 +150,4 @@ def formater_markdown(stories, _):
             md += "\n**💡 Suggestions IA**\n"
             for sug in s["suggestions"]:
                 md += f"- {sug}\n"
-
-    md += "\n\n# 📘 Analyse selon le BABOK\n"
-    md += "- **Besoin métier** : Problème ou opportunité exprimé par l’organisation\n"
-    md += "- **Exigence métier** : Objectif stratégique ou opérationnel\n"
-    md += "- **Exigence des parties prenantes** : Attente spécifique d’un acteur ou groupe impacté\n"
-    md += "- **Exigence fonctionnelle** : Comportement attendu du système\n"
-    md += "- **Exigence non fonctionnelle** : Qualité du système (performance, sécurité, ergonomie)\n"
-    md += "- **Règle métier** : Contraintes ou politiques à respecter\n"
-    md += "- **Capacité organisationnelle** : Compétence ou ressource disponible pour mettre en œuvre la solution\n"
-    return md
+            md += f"\n{s['babok']}\
