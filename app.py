@@ -1,83 +1,35 @@
-import os
-import shutil
 import streamlit as st
-from pipeline import generer_story_complete, generer_stories_depuis_besoin, formater_markdown
+from pipeline import generer_stories_depuis_besoin, formater_markdown
 
-# 🔧 Corrige les erreurs de Watchdog sur Streamlit Cloud
-os.environ["STREAMLIT_WATCHDOG_MODE"] = "poll"
+st.set_page_config(page_title="Générateur de livrables", layout="wide")
 
-# 🧹 Nettoyage automatique des fichiers parasites
-if os.path.exists("__pycache__"):
-    shutil.rmtree("__pycache__")
-for f in os.listdir():
-    if f.endswith(".pyc"):
-        os.remove(f)
+st.title("📘 Générateur de livrables métier")
+st.markdown("Formule ton besoin métier librement. Exemple : *Le gestionnaire de contrat d’assurance veut un système de gestion simple et sécurisé*")
 
-# 🧠 Configuration de l'app
-st.set_page_config(page_title="Générateur de User Stories enrichies", layout="wide")
-st.title("🧠 Générateur intelligent de User Stories")
-st.write("✅ L'application est bien lancée")
+besoin = st.text_area("✍️ Requête métier", height=100)
 
-# 📦 Initialisation de session
-if "stories" not in st.session_state:
-    st.session_state.stories = []
+if "markdown" not in st.session_state:
+    st.session_state.markdown = ""
 
-# 📝 Entrée utilisateur
-besoin = st.text_input("Exprimez votre besoin métier (ex : le gestionnaire de contrat d’assurance souhaite un système de gestion simple et sécurisé)")
+if st.button("🚀 Générer livrables"):
+    if besoin.strip():
+        stories = generer_stories_depuis_besoin(besoin)
+        exigences_globales = [ex for s in stories for ex in s["exigences"]]
+        markdown = formater_markdown(stories, exigences_globales)
+        st.session_state.markdown = markdown
+        st.success("✅ Livrable généré avec succès.")
+    else:
+        st.warning("Merci de formuler un besoin métier avant de générer.")
 
-# 🚀 Génération initiale
-if st.button("Générer"):
-    st.session_state.stories = generer_stories_depuis_besoin(besoin)
-
-# 🧩 Affichage des stories
-if st.session_state.stories:
-    exigences_globales = []
-    for s in st.session_state.stories:
-        exigences_globales.extend(s["exigences"])
-
-    # 📘 Exigences classées
-    st.markdown("## 📘 Exigences classées par type")
-    types = ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]
-    for t in types:
-        st.markdown(f"### 🟦 {t}")
-        for typ, texte in exigences_globales:
-            if typ == t:
-                st.markdown(f"- {texte}")
+if st.session_state.markdown:
     st.markdown("---")
+    st.subheader("📄 Livrable généré")
+    st.markdown(st.session_state.markdown)
 
-    # 🧩 Stories enrichies
-    for i, s in enumerate(st.session_state.stories, start=1):
-        st.markdown(f"## 🧩 Story {i}")
-        st.markdown(f"**User Story**\n{s['story']}")
-        st.markdown("**✅ Critères d’acceptation**")
-        for c in s["critères"]:
-            st.markdown(f"- {c}")
-        st.markdown("**🧪 Tests fonctionnels**")
-        for t in s["tests"]:
-            st.markdown(f"- {t}")
-        st.markdown(f"**🔒 Validation métier**\n{s['validation']}")
-        st.markdown("**💡 Suggestions IA**")
-        for suggestion in s["suggestions"]:
-            if st.button(suggestion, key=f"{i}-{suggestion}"):
-                st.success(f"✅ Suggestion sélectionnée : {suggestion}")
-
-    # 📥 Export Markdown
-    markdown_result = formater_markdown(st.session_state.stories, exigences_globales)
-    st.download_button("📥 Télécharger le Markdown", markdown_result, file_name="user_stories.md")
-
-    # ➕ Ajout dynamique libre
-    with st.expander("➕ Ajouter une partie prenante ou un besoin complémentaire"):
-        nouveau_role = st.text_input("Nom de la partie prenante (ex : actuaire, auditeur, responsable conformité)", key="role")
-        nouvelle_action = st.text_input("Action souhaitée (ex : consulter les contrats)", key="action")
-        nouvel_objectif = st.text_input("Objectif métier (ex : suivre mes engagements)", key="objectif")
-        if st.button("Ajouter cette story", key="ajouter_story"):
-            if nouveau_role and nouvelle_action and nouvel_objectif:
-                nouvelle_story = {
-                    "acteur": nouveau_role,
-                    "action": nouvelle_action,
-                    "objectif": nouvel_objectif
-                }
-                st.session_state.stories.append(generer_story_complete(nouvelle_story))
-                st.success(f"Story ajoutée pour {nouveau_role}")
-            else:
-                st.warning("Veuillez remplir les trois champs pour ajouter une story.")
+    # 📥 Téléchargement du livrable
+    st.download_button(
+        label="📥 Télécharger le livrable (.md)",
+        data=st.session_state.markdown,
+        file_name="livrable_metier.md",
+        mime="text/markdown"
+    )
