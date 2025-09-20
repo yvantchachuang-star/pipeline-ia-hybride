@@ -150,4 +150,5 @@ def formater_markdown(stories, _):
             md += "\n**💡 Suggestions IA**\n"
             for sug in s["suggestions"]:
                 md += f"- {sug}\n"
-            md += f"\n{s['babok']}\
+            md += s["babok"]
+    return md
