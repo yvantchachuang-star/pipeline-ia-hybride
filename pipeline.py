@@ -1,6 +1,6 @@
 import re
 
-# 🔍 Détection automatique du rôle dans la requête
+# 🔍 Détection automatique du rôle dans un bloc
 def extraire_partie_prenante(texte):
     texte = texte.lower().strip()
     if "en tant que" in texte:
@@ -16,7 +16,7 @@ def reformuler_besoin(besoin):
     besoin = besoin.strip()
     acteur = extraire_partie_prenante(besoin)
 
-    outil = "solution"  # ✅ Initialisation par défaut
+    outil = "solution"
     match = re.search(r"veut\s+(?:un|une|des)?\s*(\w+)?\s*(.*)", besoin.lower())
     if match:
         outil = match.group(1) or "solution"
@@ -50,6 +50,18 @@ def reformuler_besoin(besoin):
             "objectif": f"Obtenir une qualité constante dans {objectif.lower()}"
         }
     ]
+
+# 🧠 Segmentation multi-acteurs
+def segmenter_requete(requete):
+    segments = re.split(r"\s+et\s+|\s*,\s*", requete)
+    blocs = []
+    for segment in segments:
+        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+veut\s+(.*)", segment.lower())
+        if match:
+            acteur = match.group(2).strip()
+            besoin = match.group(3).strip()
+            blocs.append(f"Le {acteur} veut {besoin}")
+    return blocs
 
 # 📦 Typage adaptatif des exigences
 def typer_exigence(texte):
@@ -117,10 +129,15 @@ def generer_story_complete(template):
         "suggestions": suggestions
     }
 
-# 🧠 Génération des 3 stories à partir du besoin
-def generer_stories_depuis_besoin(besoin):
-    templates = reformuler_besoin(besoin)
-    return [generer_story_complete(t) for t in templates]
+# 🧠 Génération des stories multi-acteurs
+def generer_stories_depuis_besoin(requete):
+    blocs = segmenter_requete(requete)
+    all_stories = []
+    for bloc in blocs:
+        templates = reformuler_besoin(bloc)
+        stories = [generer_story_complete(t) for t in templates]
+        all_stories.extend(stories)
+    return all_stories
 
 # 📥 Format Markdown pour export
 def formater_markdown(stories, exigences_globales):
@@ -146,7 +163,6 @@ def formater_markdown(stories, exigences_globales):
         for sug in s["suggestions"]:
             md += f"- {sug}\n"
 
-    # ✅ Définition des types d’exigences activée
     md += "\n\n# 📘 Définition des types d’exigences\n"
     md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation (valeur, efficacité, conformité)\n"
     md += "- **Fonctionnelle** : Comportement attendu du système (actions, interfaces, règles)\n"
