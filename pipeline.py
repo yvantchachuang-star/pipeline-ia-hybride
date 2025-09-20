@@ -4,39 +4,56 @@ import re
 def extraire_partie_prenante(texte):
     texte = texte.lower().strip()
     if "en tant que" in texte:
-        return texte.split("en tant que")[1].split("je veux")[0].strip()
+        match = re.search(r"en tant que\s+([a-zàéèêç\- ]+)", texte)
+        if match:
+            return match.group(1).strip()
     elif "veut" in texte:
         return texte.split("veut")[0].replace("le ", "").replace("la ", "").replace("l'", "").strip()
     return "utilisateur"
 
-# 🔁 Reformulation du besoin en template structuré
+# 🔁 Reformulation naturelle du besoin
 def reformuler_besoin(besoin):
     besoin = besoin.strip()
-    besoin_lower = besoin.lower()
     acteur = extraire_partie_prenante(besoin)
 
-    match = re.search(r"veut (un|une|des)?\s*(\w+)?\s*(.*)", besoin_lower)
+    match = re.search(r"veut\s+(?:un|une|des)?\s*(\w+)?\s*(.*)", besoin.lower())
     if match:
-        outil = match.group(2) or "système"
-        reste = match.group(3).strip()
-        action = f"utiliser {outil} pour {reste}"
-        objectif = reste[0].upper() + reste[1:] if reste else "atteindre son objectif métier"
-        return [{
+        outil = match.group(1) or "solution"
+        reste = match.group(2).strip()
+        verbe_match = re.search(r"(d’|de\s+)?([a-zéèêàç\- ]+)", reste)
+        if verbe_match:
+            verbe_phrase = verbe_match.group(2).strip()
+            action = f"recevoir une {outil} qui permet de {verbe_phrase}"
+            objectif = verbe_phrase[0].upper() + verbe_phrase[1:]
+        else:
+            action = f"utiliser une {outil} adaptée à son besoin"
+            objectif = "atteindre son objectif métier"
+    else:
+        action = f"utiliser une solution adaptée"
+        objectif = "répondre à son besoin métier"
+
+    # Générer 3 variantes de reformulation
+    return [
+        {
             "acteur": acteur,
             "action": action,
             "objectif": objectif
-        }]
-    else:
-        return [{
+        },
+        {
             "acteur": acteur,
-            "action": f"utiliser un système pour répondre à son besoin",
-            "objectif": f"atteindre son objectif métier"
-        }]
+            "action": f"améliorer ses pratiques grâce à une {outil} dédiée",
+            "objectif": f"Optimiser ses résultats liés à {objectif.lower()}"
+        },
+        {
+            "acteur": acteur,
+            "action": f"tester et ajuster ses méthodes avec une {outil} intelligente",
+            "objectif": f"Obtenir une qualité constante dans {objectif.lower()}"
+        }
+    ]
 
 # 📦 Typage adaptatif des exigences
 def typer_exigence(texte):
     texte = texte.lower().strip()
-
     if texte.startswith("le besoin métier") or "objectif" in texte or "valeur" in texte or "résultat attendu" in texte:
         return "Métier"
     if any(texte.startswith(prefix) for prefix in [
@@ -100,7 +117,7 @@ def generer_story_complete(template):
         "suggestions": suggestions
     }
 
-# 🧠 Génération des stories à partir du besoin
+# 🧠 Génération des 3 stories à partir du besoin
 def generer_stories_depuis_besoin(besoin):
     templates = reformuler_besoin(besoin)
     return [generer_story_complete(t) for t in templates]
