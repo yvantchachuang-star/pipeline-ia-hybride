@@ -1,15 +1,15 @@
 # 📦 Typage des exigences selon leur contenu
 def typer_exigence(texte):
     texte = texte.lower()
-    if any(mot in texte for mot in ["valeur", "efficacité", "objectif", "conformité", "sécurité", "rentabilité"]):
+    if any(mot in texte for mot in ["valeur", "efficacité", "objectif", "conformité", "sécurité", "rentabilité", "ponctualité", "fiabilité"]):
         return "Métier"
-    elif any(mot in texte for mot in ["interface", "filtrer", "accéder", "gérer", "exporter", "consulter"]):
+    elif any(mot in texte for mot in ["interface", "filtrer", "accéder", "gérer", "exporter", "consulter", "rappel", "itinéraire", "notification"]):
         return "Fonctionnelle"
-    elif any(mot in texte for mot in ["temps", "performance", "authentification", "pdf", "latence", "chiffrement"]):
+    elif any(mot in texte for mot in ["temps", "performance", "authentification", "pdf", "latence", "chiffrement", "géolocalisation", "push", "sms"]):
         return "Technique"
-    elif any(mot in texte for mot in ["client", "gestionnaire", "juriste", "utilisateur", "partenaire"]):
+    elif any(mot in texte for mot in ["client", "gestionnaire", "juriste", "utilisateur", "partenaire", "femme de ménage", "actuaire", "auditeur", "responsable"]):
         return "Partie prenante"
-    elif any(mot in texte for mot in ["accessibilité", "ergonomie", "temps de réponse", "robustesse", "fiabilité"]):
+    elif any(mot in texte for mot in ["accessibilité", "ergonomie", "temps de réponse", "robustesse", "responsive", "mode hors ligne"]):
         return "Non fonctionnelle"
     else:
         return "Non classé"
@@ -17,22 +17,17 @@ def typer_exigence(texte):
 # 🔁 Reformulation du besoin en template structuré
 def reformuler_besoin(besoin):
     besoin = besoin.lower()
-    if "gestion" in besoin and "sécurisé" in besoin:
+    if "femme de ménage" in besoin and "arriver à l’heure" in besoin:
         return [
             {
-                "acteur": "gestionnaire",
-                "action": "gérer les données sensibles via une interface sécurisée",
-                "objectif": "simplifier les opérations tout en garantissant la sécurité"
+                "acteur": "femme de ménage",
+                "action": "recevoir des rappels et des estimations de trajet",
+                "objectif": "arriver à l’heure à ses missions"
             },
             {
-                "acteur": "juriste",
-                "action": "valider les accès et les clauses sensibles",
-                "objectif": "garantir la conformité et la sécurité juridique"
-            },
-            {
-                "acteur": "client",
-                "action": "consulter mes données contractuelles en toute sécurité",
-                "objectif": "suivre mes engagements sans risque"
+                "acteur": "responsable planning",
+                "action": "suivre les horaires d’arrivée des intervenants",
+                "objectif": "anticiper les retards et réorganiser les missions"
             }
         ]
     # Cas par défaut
@@ -57,7 +52,7 @@ def reformuler_besoin(besoin):
 # 💡 Suggestions IA
 def generer_suggestions_ia(template):
     return [
-        f"Ajouter une règle de sécurité liée à « {template['action']} »",
+        f"Ajouter une alerte liée à « {template['action']} »",
         f"Définir un indicateur d’efficacité pour « {template['objectif']} »",
         f"Préciser le rôle « {template['acteur']} » : opérationnel ou décisionnel",
         f"Générer une version alternative pour un autre profil métier",
@@ -68,13 +63,36 @@ def generer_suggestions_ia(template):
 def generer_story_complete(template):
     story = f"En tant que {template['acteur']}, je veux {template['action']} afin de {template['objectif']}."
 
-    exigences_brutes = [
-        f"L’interface permet de {template['action']}",
-        f"L’accès est protégé par une authentification forte",
-        f"Les données sont exportables en PDF avec horodatage et chiffrement",
-        f"{template['acteur'].capitalize()} peut suivre les opérations en temps réel",
-        f"Le système garantit un temps de réponse inférieur à 2 secondes"
-    ]
+    exigences_brutes = []
+
+    # Exigences spécifiques selon le rôle
+    if template["acteur"] == "femme de ménage":
+        exigences_brutes = [
+            "L’application affiche les horaires et adresses des missions",
+            "Elle envoie une alerte 30 minutes avant le départ",
+            "Elle propose un itinéraire optimisé",
+            "Géolocalisation pour estimer l’heure d’arrivée",
+            "Notifications push ou SMS",
+            "Interface simple et accessible sur mobile",
+            "Mode hors ligne pour les zones sans réseau"
+        ]
+    elif template["acteur"] == "responsable planning":
+        exigences_brutes = [
+            "Visualisation en temps réel de la position des intervenants",
+            "Alerte en cas de retard estimé",
+            "Possibilité de réassigner une mission",
+            "Export des horaires et historiques",
+            "Fiabilité du système en cas de réorganisation"
+        ]
+    else:
+        exigences_brutes = [
+            f"L’interface permet de {template['action']}",
+            f"{template['acteur'].capitalize()} peut accéder à la fonctionnalité « {template['action']} »",
+            "L’accès est protégé par une authentification forte",
+            "Les données sont exportables en PDF avec horodatage et chiffrement",
+            f"{template['acteur'].capitalize()} peut suivre les opérations en temps réel",
+            "Le système garantit un temps de réponse inférieur à 2 secondes"
+        ]
 
     exigences_typées = [(typer_exigence(e), e) for e in exigences_brutes]
 
