@@ -36,12 +36,14 @@ def reformuler_besoin(besoin):
     acteur = extraire_partie_prenante(besoin)
     match = re.search(r"veut\s+(.*)", besoin.lower())
     contenu = match.group(1).strip() if match else besoin
+    contenu = re.sub(r"^(un|une|des|le|la|les)\s+", "", contenu)
+    contenu = contenu.rstrip(".")
     objectif = contenu.capitalize()
 
     return [
-        {"acteur": acteur, "action": contenu, "objectif": objectif},
+        {"acteur": acteur, "action": f"accéder rapidement à {contenu}", "objectif": objectif},
         {"acteur": acteur, "action": f"améliorer ses pratiques autour de {contenu}", "objectif": f"Optimiser les résultats liés à {contenu}"},
-        {"acteur": acteur, "action": f"tester et ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
+        {"acteur": acteur, "action": f"ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
     ]
 
 # 📦 Typage adaptatif
