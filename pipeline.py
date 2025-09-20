@@ -143,4 +143,5 @@ def formater_markdown(stories, _):
     md += "- **Exigence fonctionnelle** : Comportement attendu du système\n"
     md += "- **Exigence non fonctionnelle** : Qualité du système (performance, sécurité, ergonomie)\n"
     md += "- **Règle métier** : Contraintes ou politiques à respecter\n"
-    md += "- **Capacité
+    md += "- **Capacité organisationnelle** : Compétence ou ressource disponible pour mettre en œuvre la solution\n"
+    return md
