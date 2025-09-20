@@ -149,4 +149,4 @@ def formater_markdown(stories, _):
             md += "**✅ Critères d’acceptation**\n"
             for c in s["critères"]:
                 md += f"- {c}\n"
-            md += "\n**🧪 Tests fonctionnels**
+            md += "\n**🧪 Tests
