@@ -3,7 +3,7 @@ import re
 # 🔍 Détection automatique du rôle
 def extraire_partie_prenante(texte):
     texte = texte.lower().strip()
-    match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|demande|attend|a besoin de|recherche)", texte)
+    match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)", texte)
     if match:
         return match.group(2).strip()
     match_implicite = re.search(r"pour\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", texte)
@@ -11,58 +11,37 @@ def extraire_partie_prenante(texte):
         return match_implicite.group(2).strip()
     return "utilisateur"
 
-# 🧠 Segmentation multi-acteurs avec verbes élargis et syntaxe libre
+# 🧠 Segmentation multi-acteurs avec syntaxe libre
 def segmenter_requete(requete):
     segments = re.split(r"\s+et\s+|\s*,\s*", requete)
     blocs = []
     for segment in segments:
         segment = segment.strip().lower()
-        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|demande|attend|a besoin de|recherche)\s+(.*)", segment)
+        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)\s+(.*)", segment)
         if match:
             acteur = match.group(2).strip()
             besoin = match.group(4).strip()
             blocs.append(f"Le {acteur} veut {besoin}")
         else:
-            match_implicite = re.search(r"(.*)\s+pour\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", segment)
+            match_implicite = re.search(r"(.*)\s+(pour|du côté|chez)\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", segment)
             if match_implicite:
                 besoin = match_implicite.group(1).strip()
-                acteur = match_implicite.group(3).strip()
+                acteur = match_implicite.group(4).strip()
                 blocs.append(f"Le {acteur} veut {besoin}")
     return blocs
 
-# 🔁 Reformulation fluide et grammaticale
+# 🔁 Reformulation fluide et non redondante
 def reformuler_besoin(besoin):
     besoin = besoin.strip()
     acteur = extraire_partie_prenante(besoin)
-
-    outil = "solution"
-    article = "une"
-    action = "utiliser une solution adaptée"
-    objectif = "répondre à son besoin métier"
-
     match = re.search(r"veut\s+(.*)", besoin.lower())
     contenu = match.group(1).strip() if match else besoin
-
-    nom_match = re.search(r"(un|une)\s+([a-zàéèêç\- ]+)", contenu)
-    if nom_match:
-        article = nom_match.group(1)
-        outil = nom_match.group(2).strip()
-        verbe_match = re.search(r"(?:pour|afin de|qui permet de)\s+([a-zàéèêç\- ]+)", contenu)
-        if verbe_match:
-            verbe_phrase = verbe_match.group(1).strip()
-            action = f"{article} {outil} permettant de {verbe_phrase}"
-            objectif = verbe_phrase[0].upper() + verbe_phrase[1:]
-        else:
-            action = f"{article} {outil} pour {contenu}"
-            objectif = contenu[0].upper() + contenu[1:]
-    else:
-        action = f"une solution pour {contenu}"
-        objectif = contenu[0].upper() + contenu[1:]
+    objectif = contenu.capitalize()
 
     return [
-        {"acteur": acteur, "action": f"utiliser {action}", "objectif": objectif},
-        {"acteur": acteur, "action": f"améliorer ses pratiques grâce à {article} {outil} dédiée", "objectif": f"Optimiser ses résultats liés à {objectif.lower()}"},
-        {"acteur": acteur, "action": f"tester et ajuster ses méthodes avec {article} {outil} intelligente", "objectif": f"Obtenir une qualité constante dans {objectif.lower()}"}
+        {"acteur": acteur, "action": contenu, "objectif": objectif},
+        {"acteur": acteur, "action": f"améliorer ses pratiques autour de {contenu}", "objectif": f"Optimiser les résultats liés à {contenu}"},
+        {"acteur": acteur, "action": f"tester et ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
     ]
 
 # 📦 Typage adaptatif
@@ -134,10 +113,7 @@ def formater_markdown(stories, _):
     md = "# 📘 Livrable segmenté par partie prenante\n"
     acteurs = {}
     for s in stories:
-        acteur = s["acteur"]
-        if acteur not in acteurs:
-            acteurs[acteur] = []
-        acteurs[acteur].append(s)
+        acteurs.setdefault(s["acteur"], []).append(s)
 
     for acteur, bloc_stories in acteurs.items():
         md += f"\n# 🧑‍💼 {acteur.capitalize()}\n"
@@ -158,4 +134,18 @@ def formater_markdown(stories, _):
             md += "**✅ Critères d’acceptation**\n"
             for c in s["critères"]:
                 md += f"- {c}\n"
-            md += "\n**🧪
+            md += "\n**🧪 Tests fonctionnels**\n"
+            for t in s["tests"]:
+                md += f"- {t}\n"
+            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
+            md += "\n**💡 Suggestions IA**\n"
+            for sug in s["suggestions"]:
+                md += f"- {sug}\n"
+
+    md += "\n\n# 📘 Définition des types d’exigences\n"
+    md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation\n"
+    md += "- **Fonctionnelle** : Comportement attendu du système\n"
+    md += "- **Technique** : Contraintes d’architecture, performance, sécurité\n"
+    md += "- **Partie prenante** : Besoins spécifiques d’un acteur\n"
+    md += "- **Non fonctionnelle** : Qualités du système (ergonomie, accessibilité)\n"
+    return md
