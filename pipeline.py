@@ -46,28 +46,28 @@ def reformuler_besoin(besoin):
         {"acteur": acteur, "action": f"ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
     ]
 
-# 📦 Typage adaptatif
+# 📦 Typage adaptatif + BABOK
 def typer_exigence(texte):
     texte = texte.lower().strip()
     if "objectif" in texte or "valeur" in texte or "résultat attendu" in texte:
-        return "Métier"
+        return ("Métier", "Exigence métier")
     if any(texte.startswith(prefix) for prefix in ["l’interface permet de", "le système permet de", "permet de", "affiche", "envoie", "gère"]):
-        return "Fonctionnelle"
+        return ("Fonctionnelle", "Exigence fonctionnelle")
     if any(tech in texte for tech in ["pdf", "chiffrement", "authentification", "temps de réponse", "api", "performance"]):
-        return "Technique"
+        return ("Technique", "Exigence non fonctionnelle")
     if "peut accéder" in texte or "avec un compte" in texte:
-        return "Partie prenante"
+        return ("Partie prenante", "Exigence des parties prenantes")
     if any(q in texte for q in ["ergonomie", "responsive", "mode hors ligne", "accessibilité"]):
-        return "Non fonctionnelle"
-    return "Non classé"
+        return ("Non fonctionnelle", "Exigence non fonctionnelle")
+    return ("Non classé", "Non classé")
 
-# 💡 Suggestions IA
+# 💡 Suggestions IA alignées BABOK
 def generer_suggestions_ia(template):
     return [
-        f"Ajouter une alerte liée à « {template['action']} »",
-        f"Définir un indicateur d’efficacité pour « {template['objectif']} »",
-        f"Proposer une version alternative pour un autre profil métier",
-        f"Exporter ce résultat ou l’ajouter au backlog"
+        f"Identifier les règles métier liées à « {template['action']} »",
+        f"Valider si l’exigence est stratégique ou opérationnelle",
+        f"Cartographier les capacités organisationnelles nécessaires",
+        f"Aligner cette exigence avec les objectifs du portefeuille métier"
     ]
 
 # 🧩 Story complète
@@ -81,7 +81,7 @@ def generer_story_complete(template):
         f"{template['acteur'].capitalize()} peut suivre les opérations en temps réel",
         "Le système garantit un temps de réponse inférieur à 2 secondes"
     ]
-    exigences_typées = [(typer_exigence(e), e) for e in exigences_brutes]
+    exigences_typées = [(*typer_exigence(e), e) for e in exigences_brutes]
     critères = exigences_brutes[:3]
     tests = [
         f"Se connecter avec un compte {template['acteur']}",
@@ -110,7 +110,7 @@ def generer_stories_depuis_besoin(requete):
         all_stories.extend(stories)
     return all_stories
 
-# 📥 Markdown segmenté par acteur et type
+# 📥 Markdown segmenté par acteur et type + BABOK
 def formater_markdown(stories, _):
     md = "# 📘 Livrable segmenté par partie prenante\n"
     acteurs = {}
@@ -121,14 +121,14 @@ def formater_markdown(stories, _):
         md += f"\n# 🧑‍💼 {acteur.capitalize()}\n"
         exigences_par_type = {}
         for s in bloc_stories:
-            for typ, texte in s["exigences"]:
-                exigences_par_type.setdefault(typ, []).append(texte)
+            for typ, babok, texte in s["exigences"]:
+                exigences_par_type.setdefault(typ, []).append((texte, babok))
         md += "\n## 🟦 Exigences classées par type\n"
         for typ in ["Métier", "Fonctionnelle", "Technique", "Partie prenante", "Non fonctionnelle"]:
             if typ in exigences_par_type:
                 md += f"\n### {typ}\n"
-                for texte in exigences_par_type[typ]:
-                    md += f"- {texte}\n"
+                for texte, babok in exigences_par_type[typ]:
+                    md += f"- {texte} **({babok})**\n"
         md += f"\n## 📘 User Stories du {acteur}\n"
         for i, s in enumerate(bloc_stories, start=1):
             md += f"\n### 🧩 Story {i}\n"
@@ -144,10 +144,7 @@ def formater_markdown(stories, _):
             for sug in s["suggestions"]:
                 md += f"- {sug}\n"
 
-    md += "\n\n# 📘 Définition des types d’exigences\n"
-    md += "- **Métier** : Objectifs ou besoins exprimés par l’organisation\n"
-    md += "- **Fonctionnelle** : Comportement attendu du système\n"
-    md += "- **Technique** : Contraintes d’architecture, performance, sécurité\n"
-    md += "- **Partie prenante** : Besoins spécifiques d’un acteur\n"
-    md += "- **Non fonctionnelle** : Qualités du système (ergonomie, accessibilité)\n"
-    return md
+    md += "\n\n# 📘 Analyse selon le BABOK\n"
+    md += "- **Besoin métier** : Problème ou opportunité exprimé par l’organisation\n"
+    md += "- **Exigence métier** : Objectif stratégique ou opérationnel\n"
+    md += "- **Exigence des parties prenantes** : Att
