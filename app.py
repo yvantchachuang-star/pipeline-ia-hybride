@@ -23,7 +23,7 @@ if "stories" not in st.session_state:
     st.session_state.stories = []
 
 # 📝 Entrée utilisateur
-besoin = st.text_input("Exprimez votre besoin métier (ex : le gestionnaire de contrat d'assurance souhaite un système de gestion simple et sécurisé)")
+besoin = st.text_input("Exprimez votre besoin métier (ex : le gestionnaire de contrat d’assurance souhaite un système de gestion simple et sécurisé)")
 
 # 🚀 Génération initiale
 if st.button("Générer"):
@@ -65,16 +65,19 @@ if st.session_state.stories:
     markdown_result = formater_markdown(st.session_state.stories, exigences_globales)
     st.download_button("📥 Télécharger le Markdown", markdown_result, file_name="user_stories.md")
 
-    # ➕ Ajout dynamique
+    # ➕ Ajout dynamique libre
     with st.expander("➕ Ajouter une partie prenante ou un besoin complémentaire"):
-        nouveau_role = st.text_input("Nom de la partie prenante (ex : auditeur, client)", key="role")
+        nouveau_role = st.text_input("Nom de la partie prenante (ex : actuaire, auditeur, responsable conformité)", key="role")
         nouvelle_action = st.text_input("Action souhaitée (ex : consulter les contrats)", key="action")
         nouvel_objectif = st.text_input("Objectif métier (ex : suivre mes engagements)", key="objectif")
         if st.button("Ajouter cette story", key="ajouter_story"):
-            nouvelle_story = {
-                "acteur": nouveau_role,
-                "action": nouvelle_action,
-                "objectif": nouvel_objectif
-            }
-            st.session_state.stories.append(generer_story_complete(nouvelle_story))
-            st.success(f"Story ajoutée pour {nouveau_role}")
+            if nouveau_role and nouvelle_action and nouvel_objectif:
+                nouvelle_story = {
+                    "acteur": nouveau_role,
+                    "action": nouvelle_action,
+                    "objectif": nouvel_objectif
+                }
+                st.session_state.stories.append(generer_story_complete(nouvelle_story))
+                st.success(f"Story ajoutée pour {nouveau_role}")
+            else:
+                st.warning("Veuillez remplir les trois champs pour ajouter une story.")
