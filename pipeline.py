@@ -37,8 +37,13 @@ def reformuler_besoin(besoin):
     contenu = contenu.rstrip(".")
     objectif = contenu.capitalize()
 
+    if contenu.startswith("accès rapide à") or contenu.startswith("accès à"):
+        action = contenu
+    else:
+        action = f"accéder rapidement à {contenu}"
+
     return [
-        {"acteur": acteur, "action": f"accéder rapidement à {contenu}", "objectif": objectif},
+        {"acteur": acteur, "action": action, "objectif": objectif},
         {"acteur": acteur, "action": f"améliorer ses pratiques autour de {contenu}", "objectif": f"Optimiser les résultats liés à {contenu}"},
         {"acteur": acteur, "action": f"ajuster ses méthodes concernant {contenu}", "objectif": f"Obtenir une qualité constante dans {contenu}"}
     ]
@@ -67,7 +72,7 @@ def generer_suggestions_ia(template):
 
 def generer_analyse_babok(template):
     return f"""
-### 📘 Analyse selon le BABOK
+### 📘 Exigences selon le BABOK
 
 - **Besoin métier** : {template['acteur'].capitalize()} souhaite {template['action']} pour {template['objectif'].lower()}
 - **Exigence métier** : {template['objectif']}
@@ -76,6 +81,7 @@ def generer_analyse_babok(template):
 - **Exigence non fonctionnelle** : Temps de réponse, sécurité, ergonomie liés à {template['action']}
 - **Règle métier** : Définir les conditions d’accès ou de validation pour {template['action']}
 - **Capacité organisationnelle** : Ressources nécessaires pour permettre {template['action']}
+- **Validation métier** : Le besoin métier « {template['objectif']} » est couvert par la fonctionnalité « {template['action']} »
 """
 
 def generer_story_complete(template):
@@ -143,12 +149,4 @@ def formater_markdown(stories, _):
             md += "**✅ Critères d’acceptation**\n"
             for c in s["critères"]:
                 md += f"- {c}\n"
-            md += "\n**🧪 Tests fonctionnels**\n"
-            for t in s["tests"]:
-                md += f"- {t}\n"
-            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
-            md += "\n**💡 Suggestions IA**\n"
-            for sug in s["suggestions"]:
-                md += f"- {sug}\n"
-            md += s["babok"]
-    return md
+            md += "\n**🧪 Tests fonctionnels**
