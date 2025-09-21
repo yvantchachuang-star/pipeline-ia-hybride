@@ -1,0 +1,32 @@
+/* styles.css — style iMessage */
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.user-bubble {
+    align-self: flex-end;
+    background-color: #007aff;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: 70%;
+    font-size: 15px;
+}
+
+.assistant-bubble {
+    align-self: flex-start;
+    background-color: #e5e5ea;
+    color: black;
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: 70%;
+    font-size: 15px;
+}
+
+.chat-input {
+    margin-top: 20px;
+}
