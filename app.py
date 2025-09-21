@@ -49,7 +49,6 @@ if submitted and requete:
                     for typ, babok, texte in s["exigences"]:
                         st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
-                # Export PDF individuel
                 contenu_html = markdown("\n".join(s["babok"] for s in bloc))
                 buffer = BytesIO()
                 pisa.CreatePDF(contenu_html, dest=buffer)
