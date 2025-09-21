@@ -1,11 +1,18 @@
-def gen_objectifs(rôle: str) -> list:
-    base = [
-        "accéder à une information critique",
-        "réaliser une tâche métier efficacement",
-        "obtenir une vue consolidée de l’activité",
-        "préparer une décision",
-        "suivre l’évolution d’un indicateur",
-        "valider une opération métier"
-    ]
-    return [base[(i + hash(rôle)) % len(base)] for i in range(3)]
+def gen_story(rôle: str, objectif: str) -> dict:
+    """
+    Génère une user story complète pour un rôle et un objectif donné, sans exigences.
+    """
+    story = f"En tant que {rôle}, je veux {objectif} pour atteindre mes objectifs métier."
+    critères = ["L'action est réalisable en moins de 3 étapes", "Le résultat est visible immédiatement"]
+    tests = [f"Vérifier que le {rôle} peut accéder à la fonctionnalité", "Vérifier que le résultat est conforme"]
+    validation = f"Le {rôle} confirme que l'action répond à son besoin métier."
+    suggestions = [f"Ajouter une option avancée pour le {rôle}", "Permettre une personnalisation"]
 
+    return {
+        "acteur": rôle,
+        "story": story,
+        "critères": critères,
+        "tests": tests,
+        "validation": validation,
+        "suggestions": suggestions
+    }
