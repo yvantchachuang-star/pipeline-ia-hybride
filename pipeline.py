@@ -11,17 +11,17 @@ def extraire_partie_prenante(texte):
     return "utilisateur"
 
 def segmenter_requete(requete):
-    segments = re.split(r"\s+et\s+|\s*,\s*", requete)
+    segments = re.split(r"\s*(?:et|,)\s*", requete)
     blocs = []
     for segment in segments:
         segment = segment.strip().lower()
-        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\- ]+?)\s+(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)\s+(.*)", segment)
+        match = re.search(r"(le|la|l’|les)?\s*([a-zàéèêç\-]+)\s+(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)\s+(.*)", segment)
         if match:
             acteur = match.group(2).strip()
             besoin = match.group(4).strip()
             blocs.append(f"Le {acteur} veut {besoin}")
         else:
-            match_implicite = re.search(r"(.*)\s+(pour|du côté|chez)\s+(le|la|l’|les)?\s*([a-zàéèêç\- ]+)", segment)
+            match_implicite = re.search(r"(.*)\s+(pour|du côté|chez)\s+(le|la|l’|les)?\s*([a-zàéèêç\-]+)", segment)
             if match_implicite:
                 besoin = match_implicite.group(1).strip()
                 acteur = match_implicite.group(4).strip()
@@ -31,8 +31,8 @@ def segmenter_requete(requete):
 def reformuler_besoin(besoin):
     besoin = besoin.strip()
     acteur = extraire_partie_prenante(besoin)
-    match = re.search(r"veut\s+(.*)", besoin.lower())
-    contenu = match.group(1).strip() if match else besoin
+    match = re.search(r"(veut|souhaite|voudrait|demande|attend|a besoin de|recherche)\s+(.*)", besoin.lower())
+    contenu = match.group(2).strip() if match else besoin
     contenu = re.sub(r"^(un|une|des|le|la|les)\s+", "", contenu)
     contenu = contenu.rstrip(".")
     objectif = contenu.capitalize()
@@ -151,10 +151,3 @@ def formater_markdown(stories, _):
                 md += f"- {c}\n"
             md += "\n**🧪 Tests fonctionnels**\n"
             for t in s["tests"]:
-                md += f"- {t}\n"
-            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
-            md += "\n**💡 Suggestions IA**\n"
-            for sug in s["suggestions"]:
-                md += f"- {sug}\n"
-            md += s["babok"]
-    return md
