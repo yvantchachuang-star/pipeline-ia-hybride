@@ -1,12 +1,11 @@
 import streamlit as st
-from pipeline import generer_stories_depuis_besoin
+from pipeline import generer_stories_depuis_besoin, repondre_chat
 from io import BytesIO
 from markdown import markdown
 from xhtml2pdf import pisa
 
-st.set_page_config(page_title="Pipeline IA Hybride", layout="wide")
-
-st.title("🧠 Générateur de livrables métier par partie prenante")
+st.set_page_config(page_title="Assistant IA pour l’analyse des besoins", layout="wide")
+st.title("📊 Assistant IA — Analyse des besoins et génération de livrables")
 
 with st.form("besoin_form"):
     requete = st.text_area("📝 Décris les besoins métier exprimés :", height=100)
@@ -15,7 +14,7 @@ with st.form("besoin_form"):
 if submitted and requete:
     stories = generer_stories_depuis_besoin(requete)
     roles = sorted(set(s["acteur"] for s in stories))
-    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences globales"])
+    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences globales", "💬 Assistant IA"])
 
     # Onglets par rôle (sans exigences BABOK)
     for i, role in enumerate(roles):
@@ -37,7 +36,7 @@ if submitted and requete:
                     st.markdown(f"- {sug}")
 
     # Onglet global avec sous-onglets par rôle pour les exigences BABOK
-    with tabs[-1]:
+    with tabs[-2]:
         st.header("📘 Exigences BABOK par partie prenante")
         sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles])
         for i, role in enumerate(roles):
@@ -60,3 +59,19 @@ if submitted and requete:
                     file_name=f"exigences_{role}.pdf",
                     mime="application/pdf"
                 )
+
+    # Onglet chatbox
+    with tabs[-1]:
+        st.header("💬 Assistant IA — Dialogue métier")
+        if "chat" not in st.session_state:
+            st.session_state.chat = []
+
+        for msg in st.session_state.chat:
+            st.chat_message(msg["role"]).markdown(msg["content"])
+
+        user_input = st.chat_input("Pose une question métier ou technique…")
+        if user_input:
+            st.session_state.chat.append({"role": "user", "content": user_input})
+            response = repondre_chat(user_input, stories)
+            st.session_state.chat.append({"role": "assistant", "content": response})
+            st.chat_message("assistant").markdown(response)
