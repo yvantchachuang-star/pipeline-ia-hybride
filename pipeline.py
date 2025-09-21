@@ -152,4 +152,9 @@ def formater_markdown(stories, _):
             md += "\n**🧪 Tests fonctionnels**\n"
             for t in s["tests"]:
                 md += f"- {t}\n"
-            md += f"\n**🔒 Validation métier**
+            md += f"\n**🔒 Validation métier**\n{s['validation']}\n"
+            md += "\n**💡 Suggestions IA**\n"
+            for sug in s["suggestions"]:
+                md += f"- {sug}\n"
+            md += s["babok"]
+    return md
