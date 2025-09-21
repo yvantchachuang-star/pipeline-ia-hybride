@@ -2,6 +2,10 @@ import streamlit as st
 from pipeline import generer_stories_depuis_besoin
 from pipeline.interaction_engine import repondre_intelligemment
 
+# Chargement du style iMessage
+with open("styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 st.set_page_config(page_title="Assistant IA — Analyse des besoins", layout="wide")
 st.title("📊 Assistant IA — Analyse des besoins et génération de livrables")
 
@@ -26,13 +30,13 @@ if submitted and requete:
 # Affichage des livrables si générés
 if st.session_state.generated:
     stories = st.session_state.stories
-    roles = sorted(set(s["acteur"] for s in stories))
-    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences par rôle", "💬 Assistant IA"])
+    rôles = sorted(set(s["acteur"] for s in stories))
+    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in rôles] + ["📘 Exigences par rôle", "💬 Assistant IA"])
 
     # Onglets par rôle
-    for i, role in enumerate(roles):
+    for i, rôle in enumerate(rôles):
         with tabs[i]:
-            bloc = [s for s in stories if s["acteur"] == role]
+            bloc = [s for s in stories if s["acteur"] == rôle]
             for idx, s in enumerate(bloc, start=1):
                 st.markdown(f"### 🧩 Story {idx}")
                 st.markdown(f"**User Story**\n\n{s['story']}")
@@ -52,10 +56,10 @@ if st.session_state.generated:
 
     # Exigences par rôle
     with tabs[-2]:
-        sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles])
-        for i, role in enumerate(roles):
+        sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in rôles])
+        for i, rôle in enumerate(rôles):
             with sous_tabs[i]:
-                bloc = [s for s in stories if s["acteur"] == role]
+                bloc = [s for s in stories if s["acteur"] == rôle]
                 for idx, s in enumerate(bloc, start=1):
                     st.markdown(f"### 🧩 Story {idx}")
                     st.markdown(f"**User Story**\n\n{s['story']}")
@@ -63,16 +67,20 @@ if st.session_state.generated:
                     for typ, babok, texte in s["exigences"]:
                         st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
-    # Assistant IA
+    # Assistant IA style iMessage
     with tabs[-1]:
-        st.header("💬 Assistant IA — Dialogue métier")
+        st.header("💬 Assistant IA — Style iMessage")
+
+        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
         for msg in st.session_state.chat:
-            st.chat_message(msg["role"]).markdown(msg["content"])
+            role_class = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
+            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-        user_input = st.chat_input("Pose une question métier ou relationnelle…")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        user_input = st.chat_input("💬 Envoie un message comme dans iMessage…")
         if user_input:
             st.session_state.chat.append({"role": "user", "content": user_input})
             response = repondre_intelligemment(user_input, st.session_state.stories)
             st.session_state.chat.append({"role": "assistant", "content": response})
-            st.chat_message("assistant").markdown(response)
