@@ -1,7 +1,12 @@
 from .intention_engine import detecter_intention
+from .reformulation_engine import reformuler_question
 from .assistant_engine import repondre_chat
 
 def repondre_intelligemment(message: str, stories: list) -> str:
+    """
+    Gère les échanges conversationnels : politesse, relationnel, métier, reformulation.
+    Bascule vers le moteur métier si besoin.
+    """
     intention = detecter_intention(message)
 
     if intention == "salutation":
@@ -15,5 +20,10 @@ def repondre_intelligemment(message: str, stories: list) -> str:
 
     if intention == "métier":
         return repondre_chat(message, stories)
+
+    # Si intention inconnue, tenter une reformulation
+    reformulation = reformuler_question(message)
+    if reformulation:
+        return f"🤖 Je reformule votre demande :\n{reformulation}"
 
     return "Je n’ai pas compris votre intention. Pouvez-vous préciser votre demande métier ou technique ?"
