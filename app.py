@@ -1,10 +1,8 @@
 import streamlit as st
-from pipeline import generer_stories_depuis_besoin, repondre_chat
-from io import BytesIO
-from markdown import markdown
-from xhtml2pdf import pisa
+from pipeline import generer_stories_depuis_besoin
+from assistant_engine import repondre_chat
 
-st.set_page_config(page_title="Assistant IA pour l’analyse des besoins", layout="wide")
+st.set_page_config(page_title="Assistant IA — Analyse des besoins", layout="wide")
 st.title("📊 Assistant IA — Analyse des besoins et génération de livrables")
 
 with st.form("besoin_form"):
@@ -14,9 +12,8 @@ with st.form("besoin_form"):
 if submitted and requete:
     stories = generer_stories_depuis_besoin(requete)
     roles = sorted(set(s["acteur"] for s in stories))
-    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences par rôle", "📘 Toutes les exigences BABOK", "💬 Assistant IA"])
+    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences par rôle", "💬 Assistant IA"])
 
-    # Onglets par rôle
     for i, role in enumerate(roles):
         with tabs[i]:
             st.subheader(f"📄 User Stories pour {role.capitalize()}")
@@ -35,8 +32,7 @@ if submitted and requete:
                 for sug in s["suggestions"]:
                     st.markdown(f"- {sug}")
 
-    # Exigences par rôle
-    with tabs[-3]:
+    with tabs[-2]:
         st.header("📘 Exigences BABOK par partie prenante")
         sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles])
         for i, role in enumerate(roles):
@@ -49,18 +45,6 @@ if submitted and requete:
                     for typ, babok, texte in s["exigences"]:
                         st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
-    # Vue globale BABOK
-    with tabs[-2]:
-        st.header("📘 Toutes les exigences BABOK")
-        exigences_globales = []
-        for s in stories:
-            for typ, babok, texte in s["exigences"]:
-                exigences_globales.append((s["acteur"], typ, babok, texte))
-
-        for acteur, typ, babok, texte in exigences_globales:
-            st.markdown(f"- **{typ}** ({acteur}) : {texte}  \n↪ *({babok})*")
-
-    # Assistant IA
     with tabs[-1]:
         st.header("💬 Assistant IA — Dialogue métier")
         if "chat" not in st.session_state:
