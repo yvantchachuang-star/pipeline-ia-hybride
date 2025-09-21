@@ -1,13 +1,6 @@
-import re
-
 def reformuler_question(message: str) -> str | None:
-    """
-    Reformule une question floue ou générique en une requête métier exploitable.
-    Retourne None si la question est déjà claire ou trop vague.
-    """
     msg = message.lower().strip()
 
-    # Cas flous typiques
     if "je veux comprendre" in msg or "explique" in msg:
         return "Souhaitez-vous que je vous présente les exigences métier ou les tests associés à un rôle spécifique ?"
 
