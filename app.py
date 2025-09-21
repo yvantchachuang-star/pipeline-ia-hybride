@@ -43,8 +43,12 @@ if submitted and requete:
         for i, role in enumerate(roles):
             with sous_tabs[i]:
                 bloc = [s for s in stories if s["acteur"] == role]
-                for s in bloc:
-                    st.markdown(s["babok"], unsafe_allow_html=True)
+                for idx, s in enumerate(bloc, start=1):
+                    st.markdown(f"### 🧩 Story {idx}")
+                    st.markdown(f"**User Story**\n\n{s['story']}")
+                    st.markdown("**📘 Exigences associées**")
+                    for typ, babok, texte in s["exigences"]:
+                        st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
                 # Export PDF individuel
                 contenu_html = markdown("\n".join(s["babok"] for s in bloc))
