@@ -14,9 +14,9 @@ with st.form("besoin_form"):
 if submitted and requete:
     stories = generer_stories_depuis_besoin(requete)
     roles = sorted(set(s["acteur"] for s in stories))
-    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences globales", "💬 Assistant IA"])
+    tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences par rôle", "📘 Toutes les exigences BABOK", "💬 Assistant IA"])
 
-    # Onglets par rôle (sans exigences BABOK)
+    # Onglets par rôle
     for i, role in enumerate(roles):
         with tabs[i]:
             st.subheader(f"📄 User Stories pour {role.capitalize()}")
@@ -35,8 +35,8 @@ if submitted and requete:
                 for sug in s["suggestions"]:
                     st.markdown(f"- {sug}")
 
-    # Onglet global avec sous-onglets par rôle pour les exigences BABOK
-    with tabs[-2]:
+    # Exigences par rôle
+    with tabs[-3]:
         st.header("📘 Exigences BABOK par partie prenante")
         sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles])
         for i, role in enumerate(roles):
@@ -49,17 +49,18 @@ if submitted and requete:
                     for typ, babok, texte in s["exigences"]:
                         st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
-                contenu_html = markdown("\n".join(s["babok"] for s in bloc))
-                buffer = BytesIO()
-                pisa.CreatePDF(contenu_html, dest=buffer)
-                st.download_button(
-                    label=f"📤 Télécharger les exigences de {role.capitalize()} en PDF",
-                    data=buffer.getvalue(),
-                    file_name=f"exigences_{role}.pdf",
-                    mime="application/pdf"
-                )
+    # Vue globale BABOK
+    with tabs[-2]:
+        st.header("📘 Toutes les exigences BABOK")
+        exigences_globales = []
+        for s in stories:
+            for typ, babok, texte in s["exigences"]:
+                exigences_globales.append((s["acteur"], typ, babok, texte))
 
-    # Onglet chatbox
+        for acteur, typ, babok, texte in exigences_globales:
+            st.markdown(f"- **{typ}** ({acteur}) : {texte}  \n↪ *({babok})*")
+
+    # Assistant IA
     with tabs[-1]:
         st.header("💬 Assistant IA — Dialogue métier")
         if "chat" not in st.session_state:
