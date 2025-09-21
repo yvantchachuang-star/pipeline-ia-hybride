@@ -3,10 +3,6 @@ from pipeline.reformulation_engine import reformuler_question
 from pipeline.assistant_engine import repondre_chat
 
 def repondre_intelligemment(message: str, stories: list) -> str:
-    """
-    Gère les échanges conversationnels : salutation, relationnel, politesse, métier, reformulation.
-    Bascule vers le moteur métier si besoin.
-    """
     intention = detecter_intention(message)
 
     if intention == "salutation":
