@@ -1,4 +1,4 @@
-/* styles.css — style iMessage */
+/* styles.css — style iMessage avec décalage */
 
 .chat-container {
     display: flex;
@@ -7,26 +7,40 @@
     padding: 10px;
 }
 
+/* Bulle utilisateur alignée à droite */
 .user-bubble {
     align-self: flex-end;
     background-color: #007aff;
     color: white;
     padding: 10px 14px;
     border-radius: 18px;
+    border-bottom-right-radius: 4px;
     max-width: 70%;
     font-size: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Bulle assistant alignée à gauche */
 .assistant-bubble {
     align-self: flex-start;
     background-color: #e5e5ea;
     color: black;
     padding: 10px 14px;
     border-radius: 18px;
+    border-bottom-left-radius: 4px;
     max-width: 70%;
     font-size: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.chat-input {
-    margin-top: 20px;
+/* Optionnel : animation de frappe */
+.typing-indicator {
+    align-self: flex-start;
+    background-color: #e5e5ea;
+    color: #555;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-style: italic;
+    max-width: 50%;
 }
