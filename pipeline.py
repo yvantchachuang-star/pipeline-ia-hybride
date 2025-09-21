@@ -1,9 +1,11 @@
 import re
 
 def extraire_roles_depuis_requete(requete):
-    # Extraction dynamique des rôles via "En tant que X"
-    matches = re.findall(r"en tant que (\w+)", requete.lower())
-    return list(set(matches)) or ["utilisateur"]
+    # Détection dynamique des rôles via "le X", "la X", "en tant que X"
+    candidats = re.findall(r"\ble (\w+)", requete.lower()) + \
+                re.findall(r"\bla (\w+)", requete.lower()) + \
+                re.findall(r"\ben tant que (\w+)", requete.lower())
+    return list(set(candidats)) or ["utilisateur"]
 
 def generer_stories_depuis_besoin(requete):
     rôles = extraire_roles_depuis_requete(requete)
