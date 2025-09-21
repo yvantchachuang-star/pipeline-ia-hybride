@@ -8,9 +8,11 @@ st.set_page_config(page_title="Pipeline IA Hybride", layout="wide")
 
 st.title("🧠 Générateur de livrables métier par partie prenante")
 
-requete = st.text_area("📝 Décris les besoins métier exprimés :", height=150)
+with st.form("besoin_form"):
+    requete = st.text_area("📝 Décris les besoins métier exprimés :", height=100)
+    submitted = st.form_submit_button("🚀 Générer")
 
-if requete:
+if submitted and requete:
     stories = generer_stories_depuis_besoin(requete)
     roles = sorted(set(s["acteur"] for s in stories))
     tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in roles] + ["📘 Exigences globales"])
