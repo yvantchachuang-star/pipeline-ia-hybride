@@ -19,23 +19,11 @@ def proposer_analyses(stories, rôle):
         analyses.append("⏱ Des tests de performance sont prévus. Pensez à définir des seuils mesurables.")
     return analyses
 
-
 def repondre_chat(message: str, stories: list) -> str:
     message = message.lower().strip()
     mots_cles = re.findall(r"\w+", message)
     réponses = []
 
-    # Réponses relationnelles ou polies
-    if message in ["bonjour", "salut", "hello", "bonsoir"]:
-        return "Bonjour. Je suis disponible pour vous aider à explorer les livrables métier ou les exigences BABOK."
-    if message in ["comment tu vas", "ça va", "tu es là", "tu vas bien", "tu es fatigué", "tu dors"]:
-        return "Je suis opérationnel et prêt à vous assister. Souhaitez-vous explorer un rôle métier ou une exigence particulière ?"
-    if message in ["merci", "merci beaucoup", "je te remercie"]:
-        return "Avec plaisir. N'hésitez pas à poser une autre question métier ou technique."
-    if message in ["au revoir", "bye", "à bientôt"]:
-        return "Au revoir. Je reste disponible pour toute analyse métier ou question technique."
-
-    # Détection du rôle demandé
     rôles_disponibles = sorted(set(s["acteur"].lower() for s in stories))
     rôle_demandé = next((mot for mot in mots_cles if mot in rôles_disponibles), None)
 
@@ -47,7 +35,6 @@ def repondre_chat(message: str, stories: list) -> str:
             f"Exemples de rôles disponibles : {exemples}…"
         )
 
-    # Filtrage des livrables
     bloc = [s for s in stories if s["acteur"].lower() == rôle_demandé]
     for s in bloc:
         résumé = f"🧩 **{s['story']}**"
@@ -69,11 +56,9 @@ def repondre_chat(message: str, stories: list) -> str:
         réponses.append(s["validation"])
         réponses.append("")
 
-    # Pistes d’analyse
     analyses = proposer_analyses(stories, rôle_demandé)
     if analyses:
         réponses.append("📌 **Pistes d’analyse métier**")
         réponses.extend(analyses)
 
     return "\n".join(réponses)
-
