@@ -82,5 +82,6 @@ if st.session_state.generated:
         user_input = st.chat_input("💬 Envoie un message comme dans iMessage…")
         if user_input:
             st.session_state.chat.append({"role": "user", "content": user_input})
+            st.markdown('<div class="typing-indicator">L’IA est en train d’écrire…</div>', unsafe_allow_html=True)
             response = repondre_intelligemment(user_input, st.session_state.stories)
             st.session_state.chat.append({"role": "assistant", "content": response})
