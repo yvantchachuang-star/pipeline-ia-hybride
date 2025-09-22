@@ -39,13 +39,31 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Effet de frappe animé */
+.typing-indicator-wrapper {
+    display: flex;
+    justify-content: flex-start;
+}
+
 .typing-indicator {
     background-color: #e5e5ea;
     color: #555;
     padding: 8px 12px;
     border-radius: 12px;
     font-size: 13px;
-    font-style: italic;
     max-width: 50%;
     margin-left: 10px;
+    display: inline-block;
+}
+
+.typing-indicator::after {
+    content: "⠋⠙⠹";
+    animation: typing 1s steps(3, end) infinite;
+}
+
+@keyframes typing {
+    0% { content: "⠋"; }
+    33% { content: "⠙"; }
+    66% { content: "⠹"; }
+    100% { content: "⠋"; }
 }
