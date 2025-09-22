@@ -1,6 +1,7 @@
 import streamlit as st
 from pipeline import generer_stories_depuis_besoin
 from pipeline.interaction_engine import repondre_intelligemment
+import time
 
 # Chargement du style iMessage
 with open("styles.css") as f:
@@ -74,14 +75,33 @@ if st.session_state.generated:
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
         for msg in st.session_state.chat:
-            role_class = "user-bubble" if msg["role"] == "user" else "assistant-bubble"
-            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
+            if msg["role"] == "user":
+                st.markdown(f'''
+                    <div class="user-wrapper">
+                        <div class="user-bubble">{msg["content"]}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+            else:
+                st.markdown(f'''
+                    <div class="assistant-wrapper">
+                        <div class="assistant-bubble">{msg["content"]}</div>
+                    </div>
+                ''', unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
         user_input = st.chat_input("💬 Envoie un message comme dans iMessage…")
         if user_input:
             st.session_state.chat.append({"role": "user", "content": user_input})
-            st.markdown('<div class="typing-indicator">L’IA est en train d’écrire…</div>', unsafe_allow_html=True)
+
+            # Effet de frappe animé
+            with st.empty():
+                st.markdown('''
+                    <div class="typing-indicator-wrapper">
+                        <div class="typing-indicator">L’IA est en train d’écrire</div>
+                    </div>
+                ''', unsafe_allow_html=True)
+                time.sleep(1.5)
+
             response = repondre_intelligemment(user_input, st.session_state.stories)
             st.session_state.chat.append({"role": "assistant", "content": response})
