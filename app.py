@@ -1,5 +1,5 @@
 import streamlit as st
-from pipeline import generer_stories_depuis_besoin
+from pipeline.generer_stories_depuis_besoin import generer_stories_depuis_besoin
 from pipeline.interaction_engine import repondre_intelligemment
 import time
 
