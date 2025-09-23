@@ -1,34 +1,50 @@
-import re
+from pipeline.reformulation_engine import reformuler_depuis_contexte
 
-def repondre_chat(message: str, stories: list) -> str:
-    message = message.lower().strip()
-    mots_cles = re.findall(r"\w+", message)
-    réponses = []
-
+def repondre_intelligemment(message: str, stories: list) -> str:
+    msg = message.lower().strip()
     rôles_disponibles = sorted(set(s["acteur"].lower() for s in stories))
-    rôle_demandé = next((mot for mot in mots_cles if mot in rôles_disponibles), None)
 
+    # 🔁 Reformulation contextuelle
+    reformulation = reformuler_depuis_contexte(msg, stories)
+    if reformulation:
+        return reformulation
+
+    # 🔍 Détection du rôle
+    rôle_demandé = next((r for r in rôles_disponibles if r in msg), None)
     if not rôle_demandé:
         exemples = ", ".join(r.capitalize() for r in rôles_disponibles[:3])
-        return (
-            "🤖 Je n’ai pas trouvé ce rôle dans les livrables générés.\n"
-            "Merci de vérifier que le rôle est bien mentionné dans la requête initiale.\n"
-            f"Exemples de rôles disponibles : {exemples}…"
-        )
+        return f"🤖 Je n’ai pas trouvé ce rôle dans les livrables générés.\nExemples : {exemples}…"
 
     bloc = [s for s in stories if s["acteur"].lower() == rôle_demandé]
-    for s in bloc:
-        réponses.append(f"🧩 **{s['story']}**")
-        réponses.append("✅ **Critères d’acceptation**")
-        for c in s["critères"]:
-            réponses.append(f"- {c}")
-        réponses.append("🧪 **Tests principaux**")
-        for t in s["tests"][:3]:
-            réponses.append(f"- {t}")
-        réponses.append("💡 **Suggestion IA**")
-        réponses.append(f"- {s['suggestions'][0]}")
-        réponses.append("🔒 **Validation**")
-        réponses.append(s["validation"])
-        réponses.append("")
+    if not bloc:
+        return f"🤖 Aucun livrable trouvé pour le rôle {rôle_demandé}."
 
-    return "\n".join(réponses)
+    s = bloc[0]
+    réponse = []
+
+    if "exigence" in msg:
+        réponse.append("📘 **Exigences BABOK**")
+        for typ, babok, texte in s["exigences"]:
+            réponse.append(f"- **{typ}** : {texte}  \n↪ *({babok})*")
+    elif "test" in msg:
+        réponse.append("🧪 **Tests fonctionnels**")
+        for t in s["tests"]:
+            réponse.append(f"- {t}")
+    elif "suggestion" in msg:
+        réponse.append("💡 **Suggestions IA**")
+        for sug in s["suggestions"]:
+            réponse.append(f"- {sug}")
+    else:
+        réponse.append(f"🧩 **User Story**\n{s['story']}")
+        réponse.append("✅ **Critères d’acceptation**")
+        for c in s["critères"]:
+            réponse.append(f"- {c}")
+        réponse.append("🧪 **Tests principaux**")
+        for t in s["tests"][:3]:
+            réponse.append(f"- {t}")
+        réponse.append("💡 **Suggestion IA**")
+        réponse.append(f"- {s['suggestions'][0]}")
+        réponse.append("🔒 **Validation**")
+        réponse.append(s["validation"])
+
+    return "\n".join(réponse)
