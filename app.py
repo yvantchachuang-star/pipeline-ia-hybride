@@ -35,39 +35,37 @@ if st.session_state.generated:
     rôles = sorted(set(s["acteur"] for s in stories))
     tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in rôles] + ["📘 Exigences par rôle", "💬 Assistant IA"])
 
-    # Onglets par rôle
+    # Onglets par rôle (1 story par rôle)
     for i, rôle in enumerate(rôles):
         with tabs[i]:
-            bloc = [s for s in stories if s["acteur"] == rôle]
-            for idx, s in enumerate(bloc, start=1):
-                st.markdown(f"### 🧩 Story {idx}")
-                st.markdown(f"**User Story**\n\n{s['story']}")
-                st.markdown("**📘 Exigences BABOK**")
-                for typ, babok, texte in s["exigences"]:
-                    st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
-                st.markdown("**✅ Critères d’acceptation**")
-                for c in s["critères"]:
-                    st.markdown(f"- {c}")
-                st.markdown("**🧪 Tests fonctionnels**")
-                for t in s["tests"]:
-                    st.markdown(f"- {t}")
-                st.markdown("**💡 Suggestions IA**")
-                for sug in s["suggestions"]:
-                    st.markdown(f"- {sug}")
-                st.markdown(f"**🔒 Validation métier**\n\n{s['validation']}")
+            s = next(story for story in stories if story["acteur"] == rôle)
+            st.markdown(f"### 🧩 Story — {rôle.capitalize()}")
+            st.markdown(f"**User Story**\n\n{s['story']}")
+            st.markdown("**📘 Exigences BABOK**")
+            for typ, babok, texte in s["exigences"]:
+                st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
+            st.markdown("**✅ Critères d’acceptation**")
+            for c in s["critères"]:
+                st.markdown(f"- {c}")
+            st.markdown("**🧪 Tests fonctionnels**")
+            for t in s["tests"]:
+                st.markdown(f"- {t}")
+            st.markdown("**💡 Suggestions IA**")
+            for sug in s["suggestions"]:
+                st.markdown(f"- {sug}")
+            st.markdown(f"**🔒 Validation métier**\n\n{s['validation']}")
 
     # Exigences par rôle
     with tabs[-2]:
         sous_tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in rôles])
         for i, rôle in enumerate(rôles):
             with sous_tabs[i]:
-                bloc = [s for s in stories if s["acteur"] == rôle]
-                for idx, s in enumerate(bloc, start=1):
-                    st.markdown(f"### 🧩 Story {idx}")
-                    st.markdown(f"**User Story**\n\n{s['story']}")
-                    st.markdown("**📘 Exigences associées**")
-                    for typ, babok, texte in s["exigences"]:
-                        st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
+                s = next(story for story in stories if story["acteur"] == rôle)
+                st.markdown(f"### 🧩 Story — {rôle.capitalize()}")
+                st.markdown(f"**User Story**\n\n{s['story']}")
+                st.markdown("**📘 Exigences associées**")
+                for typ, babok, texte in s["exigences"]:
+                    st.markdown(f"- **{typ}** : {texte}  \n↪ *({babok})*")
 
     # Assistant IA style iMessage
     with tabs[-1]:
