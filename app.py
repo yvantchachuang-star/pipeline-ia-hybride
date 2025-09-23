@@ -1,6 +1,6 @@
 import streamlit as st
 from pipeline.orchestrateur_pipeline import orchestrer_pipeline
-from pipeline.interaction_engine import repondre_intelligemment
+from pipeline.interaction_engine import repondre_chat
 from pipeline.enrichissement_contextuel import enrichir_depuis_requête
 import time
 
@@ -18,6 +18,8 @@ if "generated" not in st.session_state:
     st.session_state.generated = False
 if "chat" not in st.session_state:
     st.session_state.chat = []
+if "dernier_rôle" not in st.session_state:
+    st.session_state.dernier_rôle = None
 
 # Formulaire de génération
 with st.form("besoin_form"):
@@ -30,6 +32,7 @@ if submitted and requete:
     st.session_state.stories = orchestrer_pipeline(requete, privatiser=privatiser)
     st.session_state.generated = True
     st.session_state.chat = []
+    st.rerun()
 
 # Affichage des livrables si générés
 if st.session_state.generated:
@@ -37,7 +40,7 @@ if st.session_state.generated:
     rôles = sorted(set(s["acteur"] for s in stories))
     tabs = st.tabs([f"🧑‍💼 {r.capitalize()}" for r in rôles] + ["📘 Exigences par rôle", "💬 Assistant IA"])
 
-    # Onglets par rôle (1 story par rôle)
+    # Onglets par rôle
     for i, rôle in enumerate(rôles):
         with tabs[i]:
             s = next(story for story in stories if story["acteur"] == rôle)
@@ -72,7 +75,6 @@ if st.session_state.generated:
     # Assistant IA style iMessage
     with tabs[-1]:
         st.header("💬 Assistant IA — Style iMessage")
-
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 
         for msg in st.session_state.chat:
@@ -95,7 +97,16 @@ if st.session_state.generated:
         if user_input:
             st.session_state.chat.append({"role": "user", "content": user_input})
 
-            # Effet de frappe animé
+            # 🧠 Mémorisation du rôle
+            rôles_disponibles = sorted(set(s["acteur"].lower() for s in st.session_state.stories))
+            for rôle in rôles_disponibles:
+                if rôle in user_input.lower():
+                    st.session_state.dernier_rôle = rôle
+
+            st.rerun()
+
+        # 💬 Traitement IA après affichage
+        if st.session_state.chat and st.session_state.chat[-1]["role"] == "user":
             with st.empty():
                 st.markdown('''
                     <div class="typing-indicator-wrapper">
@@ -104,5 +115,7 @@ if st.session_state.generated:
                 ''', unsafe_allow_html=True)
                 time.sleep(1.5)
 
-            response = repondre_intelligemment(user_input, st.session_state.stories)
+            last_user_msg = st.session_state.chat[-1]["content"]
+            response = repondre_chat(last_user_msg, st.session_state.stories)
             st.session_state.chat.append({"role": "assistant", "content": response})
+            st.rerun()
