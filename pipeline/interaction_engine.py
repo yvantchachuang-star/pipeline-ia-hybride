@@ -17,7 +17,7 @@ def repondre_intelligemment(message: str, stories: list) -> str:
     if intention == "métier":
         return repondre_chat(message, stories)
 
-    reformulation = reformuler_question(message)
+    reformulation = reformuler_depuis_contexte(message, stories)
     if reformulation:
         return f"🤖 Hmm… tu veux dire :\n👉 {reformulation}"
 
