@@ -1,6 +1,6 @@
 from pipeline.reformulation_engine import reformuler_depuis_contexte
 
-def repondre_intelligemment(message: str, stories: list) -> str:
+def repondre_intelligemment(message: str, stories: list, rôle_contexte: str | None = None) -> str:
     msg = message.lower().strip()
     rôles_disponibles = sorted(set(s["acteur"].lower() for s in stories))
 
@@ -10,7 +10,7 @@ def repondre_intelligemment(message: str, stories: list) -> str:
         return reformulation
 
     # 🔍 Détection du rôle
-    rôle_demandé = next((r for r in rôles_disponibles if r in msg), None)
+    rôle_demandé = next((r for r in rôles_disponibles if r in msg), rôle_contexte)
     if not rôle_demandé:
         exemples = ", ".join(r.capitalize() for r in rôles_disponibles[:3])
         return f"🤖 Je n’ai pas trouvé ce rôle dans les livrables générés.\nExemples : {exemples}…"
