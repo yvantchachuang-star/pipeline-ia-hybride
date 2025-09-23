@@ -1,6 +1,7 @@
 import streamlit as st
 from pipeline.orchestrateur_pipeline import orchestrer_pipeline
 from pipeline.interaction_engine import repondre_intelligemment
+from pipeline.enrichissement_contextuel import enrichir_depuis_requête
 import time
 
 # Chargement du style iMessage
@@ -25,6 +26,7 @@ with st.form("besoin_form"):
     submitted = st.form_submit_button("🚀 Générer")
 
 if submitted and requete:
+    enrichir_depuis_requête(requete)
     st.session_state.stories = orchestrer_pipeline(requete, privatiser=privatiser)
     st.session_state.generated = True
     st.session_state.chat = []
