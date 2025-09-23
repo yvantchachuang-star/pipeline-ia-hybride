@@ -1,6 +1,5 @@
 from .analyse_roles import analyse_roles
 from .gen_objectifs import gen_objectifs
-from .generer_stories_depuis_besoin import generer_stories_depuis_besoin
 from .gen_exigences import gen_exigences
 from .gen_tests import gen_tests
 
