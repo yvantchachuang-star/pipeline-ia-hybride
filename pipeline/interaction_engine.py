@@ -1,5 +1,5 @@
 from pipeline.intention_engine import detecter_intention
-from pipeline.reformulation_engine import reformuler_question
+from pipeline.reformulation_engine import reformuler_depuis_contexte
 from pipeline.assistant_engine import repondre_chat
 
 def repondre_intelligemment(message: str, stories: list) -> str:
