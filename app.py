@@ -1,5 +1,5 @@
 import streamlit as st
-from pipeline.generer_stories_depuis_besoin import generer_stories_depuis_besoin
+from pipeline.orchestrateur_pipeline import orchestrer_pipeline
 from pipeline.interaction_engine import repondre_intelligemment
 import time
 
@@ -21,10 +21,11 @@ if "chat" not in st.session_state:
 # Formulaire de génération
 with st.form("besoin_form"):
     requete = st.text_area("📝 Décris les besoins métier exprimés :", height=100)
+    privatiser = st.checkbox("🔐 Activer la privatisation des livrables")
     submitted = st.form_submit_button("🚀 Générer")
 
 if submitted and requete:
-    st.session_state.stories = generer_stories_depuis_besoin(requete)
+    st.session_state.stories = orchestrer_pipeline(requete, privatiser=privatiser)
     st.session_state.generated = True
     st.session_state.chat = []
 
